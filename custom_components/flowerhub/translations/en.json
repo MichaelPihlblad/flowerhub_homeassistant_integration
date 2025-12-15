@@ -1,0 +1,38 @@
+{
+  "title": "Flowerhub",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Flowerhub",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "Your Flowerhub username",
+          "password": "Your Flowerhub password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Please check your credentials.",
+      "missing_library": "The flowerhub-client library is not installed. Please install it first."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": "Connection Status",
+      "last_updated": "Data Last Updated"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "scan_interval": "Scan interval (seconds)"
+        }
+      }
+    }
+  }
+}

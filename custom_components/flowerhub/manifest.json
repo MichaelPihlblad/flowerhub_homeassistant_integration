@@ -1,0 +1,11 @@
+{
+  "domain": "flowerhub",
+  "name": "Flowerhub",
+  "config_flow": true,
+  "version": "0.2.0",
+  "documentation": "https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration",
+  "issue_tracker": "https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration/issues",
+  "requirements": ["flowerhub-portal-api-client@git+https://github.com/MichaelPihlblad/flowerhub-portal-api_python-lib@0.2.0"],
+  "codeowners": ["@MichaelPihlblad"],
+  "iot_class": "cloud_polling"
+}
