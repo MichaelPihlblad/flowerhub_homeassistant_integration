@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: Validate and prepare release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run pre-commit (lint/format/type)
+        run: pre-commit run --all-files
+
+      # Optional: quick smoke test (kept light, single version)
+      - name: Run smoke tests
+        run: pytest -q
+
+      # Optional: attach artifacts or build a zip for HACS if needed
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: flowerhub_integration
+      #     path: custom_components/flowerhub/**

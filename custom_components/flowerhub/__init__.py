@@ -10,16 +10,13 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 
+from flowerhub_portal_api_client import AsyncFlowerhubClient
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-import asyncio
-
-from flowerhub_portal_api_client import AsyncFlowerhubClient
-from .coordinator import FlowerhubDataUpdateCoordinator
 
 from .const import DOMAIN, PLATFORMS
+from .coordinator import FlowerhubDataUpdateCoordinator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # For tests: expose a sensor state based on the coordinator's data
     # In real HA, the platform will create the entity
     entity_id = "sensor.flowerhub_status"
+
     def _update_state() -> None:
         data = coordinator.data or {}
         status = data.get("status")
@@ -80,7 +78,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         coordinator = entry_data["coordinator"]
         client = entry_data["client"]
         client.stop_periodic_asset_fetch()
-        if hasattr(coordinator, '_unsub_shutdown') and coordinator._unsub_shutdown:
+        if hasattr(coordinator, "_unsub_shutdown") and coordinator._unsub_shutdown:
             coordinator._unsub_shutdown()
         remove_listener = entry_data.get("remove_listener")
         if remove_listener:

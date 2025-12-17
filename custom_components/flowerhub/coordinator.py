@@ -26,11 +26,21 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         return {
             "status": status.status if status else None,
             "message": status.message if status else None,
-            "last_updated": status.updated_at.isoformat() if status and status.updated_at else None,
-            "inverter_name": asset_info.get("inverter", {}).get("name") if asset_info else None,
-            "battery_name": asset_info.get("battery", {}).get("name") if asset_info else None,
-            "power_capacity": asset_info.get("inverter", {}).get("powerCapacity") if asset_info else None,
-            "energy_capacity": asset_info.get("battery", {}).get("energyCapacity") if asset_info else None,
+            "last_updated": status.updated_at.isoformat()
+            if status and status.updated_at
+            else None,
+            "inverter_name": asset_info.get("inverter", {}).get("name")
+            if asset_info
+            else None,
+            "battery_name": asset_info.get("battery", {}).get("name")
+            if asset_info
+            else None,
+            "power_capacity": asset_info.get("inverter", {}).get("powerCapacity")
+            if asset_info
+            else None,
+            "energy_capacity": asset_info.get("battery", {}).get("energyCapacity")
+            if asset_info
+            else None,
             "fuse_size": asset_info.get("fuseSize") if asset_info else None,
             "is_installed": asset_info.get("isInstalled") if asset_info else None,
         }

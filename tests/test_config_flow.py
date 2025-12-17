@@ -1,17 +1,14 @@
 import pytest
-
-from homeassistant import data_entry_flow
-
-from homeassistant.core import HomeAssistant
-
-from flowerhub.const import DOMAIN
 from flowerhub.config_flow import ConfigFlow
+from homeassistant import data_entry_flow
+from homeassistant.core import HomeAssistant
 
 
 @pytest.mark.asyncio
 async def test_config_flow_success(hass: HomeAssistant):
     # Start config flow
-    # Some test harnesses provide `hass` as an async generator; ensure we have the instance
+    # Some test harnesses provide `hass` as an async generator;
+    # ensure we have the instance
     hass_gen = hass
     if hasattr(hass, "__anext__"):
         hass = await hass.__anext__()
@@ -22,7 +19,9 @@ async def test_config_flow_success(hass: HomeAssistant):
     assert result["type"] == data_entry_flow.FlowResultType.FORM
 
     # Submit user data, our fake client will accept it
-    result2 = await flow.async_step_user({"username": "testuser", "password": "testpass"})
+    result2 = await flow.async_step_user(
+        {"username": "testuser", "password": "testpass"}
+    )
     assert result2["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
     assert result2["title"]
 
@@ -40,6 +39,7 @@ async def test_config_flow_cannot_connect(hass: HomeAssistant, monkeypatch):
     hass_gen = hass
     if hasattr(hass, "__anext__"):
         hass = await hass.__anext__()
+
     class BadClient:
         def __init__(self, *args, **kwargs):
             pass
@@ -47,7 +47,11 @@ async def test_config_flow_cannot_connect(hass: HomeAssistant, monkeypatch):
         async def async_readout_sequence(self):
             raise Exception("failed")
 
-    monkeypatch.setitem(__import__("sys").modules, "flowerhub_portal_api_client", type("m", (), {"AsyncFlowerhubClient": BadClient}))
+    monkeypatch.setitem(
+        __import__("sys").modules,
+        "flowerhub_portal_api_client",
+        type("m", (), {"AsyncFlowerhubClient": BadClient}),
+    )
 
     flow = ConfigFlow()
     flow.hass = hass

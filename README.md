@@ -6,9 +6,8 @@ This integration allows you to integrate your FlowerHub powergrid battery balanc
 
 ## Features
 
-- **Real-time Monitoring**: Get live data from your FlowerHub system
-- **Sensor Entities**: Monitor inverter power, battery status, and system health
-- **Automatic Updates**: Data refreshes periodically using Home Assistant's DataUpdateCoordinator
+- **Real-time Monitoring**: Get live data from FlowerHub portal
+- **Sensor Entities**: Monitor flowerhub connection status
 - **Secure Authentication**: Uses your FlowerHub credentials securely
 
 ## Installation
@@ -16,13 +15,17 @@ This integration allows you to integrate your FlowerHub powergrid battery balanc
 ### Option 1: HACS (Recommended)
 
 1. Ensure [HACS](https://hacs.xyz/) is installed in your Home Assistant instance.
-2. Add this repository as a custom repository in HACS:
+2. **Quick Install** (one-click): Click the button below to add this repository automatically:
+
+   [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=MichaelPihlblad&repository=flowerhub_homeassistant_integration&category=integration)
+
+3. Or manually add this repository in HACS:
    - Go to HACS → Integrations
    - Click the three dots (⋮) → Custom repositories
    - Add `https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration` as a repository URL
    - Select "Integration" as the category
-3. Search for "FlowerHub" in HACS and install it.
-4. Restart Home Assistant.
+4. Search for "FlowerHub" in HACS and install it.
+5. Restart Home Assistant.
 
 ### Option 2: Manual Installation
 
@@ -37,6 +40,10 @@ This integration allows you to integrate your FlowerHub powergrid battery balanc
 3. Enter your FlowerHub username and password.
 4. Click **Submit** to complete the setup.
 
+**Quick Setup** (one-click after HACS download): Click the button below to open the integration setup:
+
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/integration.svg)](https://my.home-assistant.io/redirect/integration/?domain=flowerhub)
+
 ### Configuration Options
 
 - **Username**: Your FlowerHub portal account username
@@ -46,16 +53,21 @@ This integration allows you to integrate your FlowerHub powergrid battery balanc
 
 The integration creates the following sensor entities:
 
-- **FlowerHub System Status**: Overall system status
-- **Inverter Power**: Current power output (W)
-- **Battery SOC**: Battery state of charge (%)
-- **Battery Energy**: Available battery energy (kWh)
+- **FlowerHub Connection Status**: Connection system status
+#### Diagnostics
+- **Inverter name**: Model of inverter
+- **Battery name**: Model of battery
+- **Inverter Power Capacity**: inverter max power output (W)
+- **Battery Energy Capacity**: battery energy capacity (kWh)
+- **Flowerhub installation status**: installed / not installed
+- **Flowerhub configured fuse size**: configured size of fuse in the system (A)
+- **Data age**: Timestamp of when data was last retreived from Flowerhub portal API
 
 ## Requirements
 
 - Home Assistant 2023.6.0 or later
 - [FlowerHub portal](https://portal.flowerhub.se) account
-- `flowerhub-portal-api-client` library (automatically installed)
+- [`flowerhub-portal-api-client`](https://github.com/MichaelPihlblad/flowerhub_portal_api_client) library (automatically installed)
 
 ## Troubleshooting
 
@@ -65,7 +77,7 @@ The integration creates the following sensor entities:
 - Ensure your FlowerHub account is active
 
 ### Missing Library
-- The integration requires the `flowerhub-portal-api-client` library
+- The integration requires the [`flowerhub-portal-api-client`](https://github.com/MichaelPihlblad/flowerhub_portal_api_client) library
 - If installation fails, try restarting Home Assistant after installation
 
 ### No Data

@@ -1,12 +1,8 @@
-import asyncio
 import pytest
-
-from homeassistant.core import HomeAssistant
-
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
-from flowerhub.const import DOMAIN
 from flowerhub import async_setup_entry
+from flowerhub.const import DOMAIN
+from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
 @pytest.mark.asyncio
@@ -17,7 +13,9 @@ async def test_entity_state_and_coordinator_refresh(hass: HomeAssistant):
         hass = await hass.__anext__()
 
     # Create a mock config entry and set up the integration directly
-    entry = MockConfigEntry(domain=DOMAIN, data={"username": "testuser", "password": "testpass"})
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"username": "testuser", "password": "testpass"}
+    )
     await async_setup_entry(hass, entry)
     await hass.async_block_till_done()
 

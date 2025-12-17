@@ -5,9 +5,14 @@ from __future__ import annotations
 from datetime import datetime
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
-from homeassistant.const import EntityCategory, UnitOfPower, UnitOfEnergy, UnitOfElectricCurrent
+from homeassistant.const import (
+    EntityCategory,
+    UnitOfElectricCurrent,
+    UnitOfEnergy,
+    UnitOfPower,
+)
 
-from .const import DOMAIN, DEFAULT_NAME
+from .const import DEFAULT_NAME, DOMAIN
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -16,16 +21,19 @@ async def async_setup_entry(hass, entry, async_add_entities):
         coordinator = data["coordinator"]
     else:
         coordinator = data  # for test
-    async_add_entities([
-        FlowerhubStatusSensor(coordinator, entry),
-        FlowerhubLastUpdatedSensor(coordinator, entry),
-        FlowerhubInverterNameSensor(coordinator, entry),
-        FlowerhubBatteryNameSensor(coordinator, entry),
-        FlowerhubPowerCapacitySensor(coordinator, entry),
-        FlowerhubEnergyCapacitySensor(coordinator, entry),
-        FlowerhubFuseSizeSensor(coordinator, entry),
-        FlowerhubIsInstalledSensor(coordinator, entry),
-    ], True)
+    async_add_entities(
+        [
+            FlowerhubStatusSensor(coordinator, entry),
+            FlowerhubLastUpdatedSensor(coordinator, entry),
+            FlowerhubInverterNameSensor(coordinator, entry),
+            FlowerhubBatteryNameSensor(coordinator, entry),
+            FlowerhubPowerCapacitySensor(coordinator, entry),
+            FlowerhubEnergyCapacitySensor(coordinator, entry),
+            FlowerhubFuseSizeSensor(coordinator, entry),
+            FlowerhubIsInstalledSensor(coordinator, entry),
+        ],
+        True,
+    )
 
 
 class FlowerhubStatusSensor(SensorEntity):
@@ -37,8 +45,10 @@ class FlowerhubStatusSensor(SensorEntity):
         super().__init__()
 
     async def async_added_to_hass(self):
-        if hasattr(self.coordinator, 'async_add_listener'):
-            self.async_on_remove(self.coordinator.async_add_listener(self._handle_coordinator_update))
+        if hasattr(self.coordinator, "async_add_listener"):
+            self.async_on_remove(
+                self.coordinator.async_add_listener(self._handle_coordinator_update)
+            )
 
     def _handle_coordinator_update(self):
         self.async_write_ha_state()
@@ -83,8 +93,10 @@ class FlowerhubLastUpdatedSensor(SensorEntity):
         super().__init__()
 
     async def async_added_to_hass(self):
-        if hasattr(self.coordinator, 'async_add_listener'):
-            self.async_on_remove(self.coordinator.async_add_listener(self._handle_coordinator_update))
+        if hasattr(self.coordinator, "async_add_listener"):
+            self.async_on_remove(
+                self.coordinator.async_add_listener(self._handle_coordinator_update)
+            )
 
     def _handle_coordinator_update(self):
         self.async_write_ha_state()
@@ -127,7 +139,9 @@ class FlowerhubInverterNameSensor(SensorEntity):
         super().__init__()
 
     async def async_added_to_hass(self):
-        self.async_on_remove(self.coordinator.async_add_listener(self._handle_coordinator_update))
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
 
     def _handle_coordinator_update(self):
         self.async_write_ha_state()
@@ -167,7 +181,9 @@ class FlowerhubBatteryNameSensor(SensorEntity):
         super().__init__()
 
     async def async_added_to_hass(self):
-        self.async_on_remove(self.coordinator.async_add_listener(self._handle_coordinator_update))
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
 
     def _handle_coordinator_update(self):
         self.async_write_ha_state()
@@ -209,7 +225,9 @@ class FlowerhubPowerCapacitySensor(SensorEntity):
         super().__init__()
 
     async def async_added_to_hass(self):
-        self.async_on_remove(self.coordinator.async_add_listener(self._handle_coordinator_update))
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
 
     def _handle_coordinator_update(self):
         self.async_write_ha_state()
@@ -251,7 +269,9 @@ class FlowerhubEnergyCapacitySensor(SensorEntity):
         super().__init__()
 
     async def async_added_to_hass(self):
-        self.async_on_remove(self.coordinator.async_add_listener(self._handle_coordinator_update))
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
 
     def _handle_coordinator_update(self):
         self.async_write_ha_state()
@@ -293,7 +313,9 @@ class FlowerhubFuseSizeSensor(SensorEntity):
         super().__init__()
 
     async def async_added_to_hass(self):
-        self.async_on_remove(self.coordinator.async_add_listener(self._handle_coordinator_update))
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
 
     def _handle_coordinator_update(self):
         self.async_write_ha_state()
@@ -333,7 +355,9 @@ class FlowerhubIsInstalledSensor(SensorEntity):
         super().__init__()
 
     async def async_added_to_hass(self):
-        self.async_on_remove(self.coordinator.async_add_listener(self._handle_coordinator_update))
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
 
     def _handle_coordinator_update(self):
         self.async_write_ha_state()

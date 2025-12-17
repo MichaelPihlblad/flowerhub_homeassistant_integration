@@ -2,26 +2,27 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import voluptuous as vol
-import logging
-
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DOMAIN, DEFAULT_NAME
+from .const import DEFAULT_NAME, DOMAIN
 
-STEP_USER_DATA_SCHEMA = vol.Schema({
-    vol.Required("username"): str,
-    vol.Required("password"): str,
-})
+STEP_USER_DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required("username"): str,
+        vol.Required("password"): str,
+    }
+)
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
@@ -46,7 +47,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             else:
                 return self.async_create_entry(
-                    title=DEFAULT_NAME, data={"username": username, "password": password}
+                    title=DEFAULT_NAME,
+                    data={"username": username, "password": password},
                 )
 
         return self.async_show_form(
@@ -66,11 +68,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(step_id="init", data_schema=options_schema)
 
 
-async def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> OptionsFlowHandler:
+async def async_get_options_flow(
+    config_entry: config_entries.ConfigEntry,
+) -> OptionsFlowHandler:
     return OptionsFlowHandler(config_entry)
 
 
-async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: config_entries.ConfigEntry) -> dict[str, Any]:
+async def async_get_config_entry_diagnostics(
+    hass: HomeAssistant, entry: config_entries.ConfigEntry
+) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
     from .const import DOMAIN
 
@@ -81,13 +87,17 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: config_
         readout = await client.async_readout_sequence()
         return {
             "asset_owner_information": readout["with_asset_resp"]["json"],
-            "hardware_asset_details": readout["asset_resp"]["json"] if readout["asset_resp"] else None,
+            "hardware_asset_details": readout["asset_resp"]["json"]
+            if readout["asset_resp"]
+            else None,
             "client_connection_state": {
                 "asset_owner_id": client.asset_owner_id,
                 "asset_id": client.asset_id,
                 "asset_info": client.asset_info,
-                "flowerhub_status": client.flowerhub_status.__dict__ if client.flowerhub_status else None,
-            }
+                "flowerhub_status": client.flowerhub_status.__dict__
+                if client.flowerhub_status
+                else None,
+            },
         }
     except Exception as e:
         return {"diagnostic_error": str(e)}

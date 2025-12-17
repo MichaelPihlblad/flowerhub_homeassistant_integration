@@ -3,11 +3,6 @@ import types
 
 import pytest
 
-# Ensure pytest-homeassistant-custom-component plugin is loaded
-pytest_plugins = "pytest_homeassistant_custom_component"
-
-from homeassistant.core import HomeAssistant
-
 # Ensure pycares shutdown thread (created by aiodns/pycares) is started
 # before the test thread snapshot is taken by pytest-homeassistant so it is
 # not reported as a lingering thread during teardown. If pycares isn't
@@ -26,12 +21,16 @@ try:
 except Exception:
     pass
 
+# Ensure pytest-homeassistant-custom-component plugin is loaded
+pytest_plugins = "pytest_homeassistant_custom_component"
+
 
 class FakeStatus:
     def __init__(self, status=None, message=None):
         self.status = status
         self.message = message
         from datetime import datetime
+
         self.updated_at = datetime.now()
 
 
@@ -55,7 +54,9 @@ class FakeAsyncFlowerhubClient:
     async def async_readout_sequence(self):
         # Change status on each call so coordinator updates can be observed
         self._counter += 1
-        self.flowerhub_status = FakeStatus(status=f"state_{self._counter}", message="ok")
+        self.flowerhub_status = FakeStatus(
+            status=f"state_{self._counter}", message="ok"
+        )
 
     def stop_periodic_asset_fetch(self):
         self.stopped = True
