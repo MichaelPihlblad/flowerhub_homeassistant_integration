@@ -18,9 +18,14 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=update_interval,
         )
         self.client = client
+        self._first_update = True
 
     async def _async_update(self) -> dict[str, Any]:
-        await self.client.async_readout_sequence()
+        if self._first_update:
+            await self.client.async_readout_sequence()
+            self._first_update = False
+        else:
+            await self.client.async_fetch_asset()
         status = self.client.flowerhub_status
         asset_info = self.client.asset_info
         return {
