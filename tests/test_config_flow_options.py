@@ -1,14 +1,14 @@
+from typing import Any
+
 import pytest
-
-from homeassistant import data_entry_flow
-from homeassistant.core import HomeAssistant
-
 from flowerhub.config_flow import (
     OptionsFlowHandler,
     async_get_config_entry_diagnostics,
     async_get_options_flow,
 )
 from flowerhub.const import DOMAIN
+from homeassistant import data_entry_flow
+from homeassistant.core import HomeAssistant
 
 
 @pytest.mark.asyncio
@@ -41,7 +41,7 @@ async def test_config_entry_diagnostics_error_path(hass: HomeAssistant):
     class ClientWithMinimalAPI:
         asset_owner_id = "owner"
         asset_id = "asset"
-        asset_info = {}
+        asset_info: dict[str, Any] = {}
         flowerhub_status = None
 
         async def async_readout_sequence(self):
@@ -52,12 +52,15 @@ async def test_config_entry_diagnostics_error_path(hass: HomeAssistant):
             self.entry_id = "entry_1"
 
     entry = DummyEntry()
-    # Some test harnesses provide `hass` as an async generator; ensure we have the instance
+    # Some test harnesses provide `hass` as an async generator.
+    # Ensure we have the actual `HomeAssistant` instance.
     hass_gen = hass
     if hasattr(hass, "__anext__"):
         hass = await hass.__anext__()
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {"client": ClientWithMinimalAPI()}
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
+        "client": ClientWithMinimalAPI()
+    }
 
     result = await async_get_config_entry_diagnostics(hass, entry)
     assert "diagnostic_error" in result

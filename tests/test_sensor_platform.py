@@ -1,15 +1,15 @@
-import pytest
 from datetime import datetime
 
+import pytest
 from flowerhub.sensor import (
-    FlowerhubStatusSensor,
-    FlowerhubLastUpdatedSensor,
-    FlowerhubInverterNameSensor,
     FlowerhubBatteryNameSensor,
-    FlowerhubPowerCapacitySensor,
     FlowerhubEnergyCapacitySensor,
     FlowerhubFuseSizeSensor,
+    FlowerhubInverterNameSensor,
     FlowerhubIsInstalledSensor,
+    FlowerhubLastUpdatedSensor,
+    FlowerhubPowerCapacitySensor,
+    FlowerhubStatusSensor,
 )
 
 
@@ -61,7 +61,11 @@ def test_sensor_values_and_device_info(sensor_cls, expected):
         assert isinstance(val, datetime) or val is None
     elif isinstance(
         sensor,
-        (FlowerhubPowerCapacitySensor, FlowerhubEnergyCapacitySensor, FlowerhubFuseSizeSensor),
+        (
+            FlowerhubPowerCapacitySensor,
+            FlowerhubEnergyCapacitySensor,
+            FlowerhubFuseSizeSensor,
+        ),
     ):
         assert sensor.native_value == expected[0]
     else:
