@@ -29,7 +29,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Use the dedicated coordinator wrapper to keep logic centralized
     scan_interval = entry.options.get("scan_interval", 60)
     coordinator = FlowerhubDataUpdateCoordinator(
-        hass, client, update_interval=timedelta(seconds=scan_interval)
+        hass,
+        client,
+        update_interval=timedelta(seconds=scan_interval),
+        username=entry.data.get("username"),
+        password=entry.data.get("password"),
     )
 
     await coordinator.async_refresh()

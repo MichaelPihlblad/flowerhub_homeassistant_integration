@@ -43,11 +43,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 LOGGER.error("Flowerhub client library not found: %s", err)
                 errors["base"] = "missing_library"
             except Exception as err:
-                LOGGER.exception("Authentication failed for user %s: %s", username, err)
+                # Do not log credentials; keep a concise trace for diagnostics
+                LOGGER.exception("Authentication failed during validation: %s", err)
                 errors["base"] = "cannot_connect"
             else:
                 return self.async_create_entry(
                     title=DEFAULT_NAME,
+                    description="Login using Flowerhub portal account credentials",
                     data={"username": username, "password": password},
                 )
 
