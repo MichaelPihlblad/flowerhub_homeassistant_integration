@@ -58,6 +58,13 @@ class FakeAsyncFlowerhubClient:
             status=f"state_{self._counter}", message="ok"
         )
 
+    async def async_fetch_asset(self):
+        # Simulate periodic polling with new status
+        self._counter += 1
+        self.flowerhub_status = FakeStatus(
+            status=f"state_{self._counter}", message="ok"
+        )
+
     def stop_periodic_asset_fetch(self):
         self.stopped = True
 

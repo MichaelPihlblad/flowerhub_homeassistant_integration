@@ -52,9 +52,9 @@ This integration allows you to integrate your FlowerHub powergrid battery balanc
 ## Entities
 
 The integration creates the following sensor entities:
-
+### Sensors
 - **FlowerHub Connection Status**: Connection system status
-#### Diagnostics
+### Diagnostics
 - **Inverter name**: Model of inverter
 - **Battery name**: Model of battery
 - **Inverter Power Capacity**: inverter max power output (W)
@@ -67,7 +67,7 @@ The integration creates the following sensor entities:
 
 - Home Assistant 2023.6.0 or later
 - [FlowerHub portal](https://portal.flowerhub.se) account
-- [`flowerhub-portal-api-client`](https://github.com/MichaelPihlblad/flowerhub_portal_api_client) library (automatically installed)
+- [`flowerhub-portal-api-client`](https://pypi.org/project/flowerhub-portal-api-client/) library (automatically installed)
 
 ## Troubleshooting
 
@@ -77,7 +77,7 @@ The integration creates the following sensor entities:
 - Ensure your FlowerHub account is active
 
 ### Missing Library
-- The integration requires the [`flowerhub-portal-api-client`](https://github.com/MichaelPihlblad/flowerhub_portal_api_client) library
+- The integration requires the [`flowerhub-portal-api-client`](https://pypi.org/project/flowerhub-portal-api-client/) library
 - If installation fails, try restarting Home Assistant after installation
 
 ### No Data
