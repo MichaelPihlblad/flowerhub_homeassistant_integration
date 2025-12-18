@@ -37,10 +37,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class FlowerhubStatusSensor(SensorEntity):
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
         self._config_entry = entry
-        self._attr_name = "FlowerHub Connection Status"
+        self._attr_name = "Connection Status"
         self._attr_unique_id = f"{entry.entry_id}_status"
         super().__init__()
 
@@ -83,10 +85,12 @@ class FlowerhubStatusSensor(SensorEntity):
 
 
 class FlowerhubLastUpdatedSensor(SensorEntity):
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
         self._config_entry = entry
-        self._attr_name = "FlowerHub Data Last Updated"
+        self._attr_name = "Data Last Updated"
         self._attr_unique_id = f"{entry.entry_id}_last_updated"
         self._attr_device_class = SensorDeviceClass.TIMESTAMP
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
@@ -130,10 +134,12 @@ class FlowerhubLastUpdatedSensor(SensorEntity):
 
 
 class FlowerhubInverterNameSensor(SensorEntity):
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
         self._config_entry = entry
-        self._attr_name = "FlowerHub Inverter Name"
+        self._attr_name = "Inverter Name"
         self._attr_unique_id = f"{entry.entry_id}_inverter_name"
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
         super().__init__()
@@ -172,10 +178,12 @@ class FlowerhubInverterNameSensor(SensorEntity):
 
 
 class FlowerhubBatteryNameSensor(SensorEntity):
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
         self._config_entry = entry
-        self._attr_name = "FlowerHub Battery Name"
+        self._attr_name = "Battery Name"
         self._attr_unique_id = f"{entry.entry_id}_battery_name"
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
         super().__init__()
@@ -214,10 +222,12 @@ class FlowerhubBatteryNameSensor(SensorEntity):
 
 
 class FlowerhubPowerCapacitySensor(SensorEntity):
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
         self._config_entry = entry
-        self._attr_name = "FlowerHub Power Capacity"
+        self._attr_name = "Power Capacity"
         self._attr_unique_id = f"{entry.entry_id}_power_capacity"
         self._attr_device_class = SensorDeviceClass.POWER
         self._attr_native_unit_of_measurement = UnitOfPower.KILO_WATT
@@ -258,10 +268,12 @@ class FlowerhubPowerCapacitySensor(SensorEntity):
 
 
 class FlowerhubEnergyCapacitySensor(SensorEntity):
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
         self._config_entry = entry
-        self._attr_name = "FlowerHub Energy Capacity"
+        self._attr_name = "Energy Capacity"
         self._attr_unique_id = f"{entry.entry_id}_energy_capacity"
         self._attr_device_class = SensorDeviceClass.ENERGY_STORAGE
         self._attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
@@ -302,10 +314,12 @@ class FlowerhubEnergyCapacitySensor(SensorEntity):
 
 
 class FlowerhubFuseSizeSensor(SensorEntity):
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
         self._config_entry = entry
-        self._attr_name = "FlowerHub Fuse Size"
+        self._attr_name = "Fuse Size"
         self._attr_unique_id = f"{entry.entry_id}_fuse_size"
         self._attr_device_class = SensorDeviceClass.CURRENT
         self._attr_native_unit_of_measurement = UnitOfElectricCurrent.AMPERE
@@ -346,10 +360,12 @@ class FlowerhubFuseSizeSensor(SensorEntity):
 
 
 class FlowerhubIsInstalledSensor(SensorEntity):
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
         self._config_entry = entry
-        self._attr_name = "FlowerHub Is Installed"
+        self._attr_name = "Is Installed"
         self._attr_unique_id = f"{entry.entry_id}_is_installed"
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
         super().__init__()
