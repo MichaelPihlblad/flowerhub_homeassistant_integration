@@ -21,8 +21,14 @@
   },
   "entity": {
     "sensor": {
-      "status": "Connection Status",
-      "last_updated": "Data Last Updated"
+      "status": { "name": "Connection Status" },
+      "last_updated": { "name": "Data Last Updated" },
+      "inverter_name": { "name": "Inverter Name" },
+      "battery_name": { "name": "Battery Name" },
+      "power_capacity": { "name": "Power Capacity" },
+      "energy_capacity": { "name": "Energy Capacity" },
+      "fuse_size": { "name": "Fuse Size" },
+      "is_installed": { "name": "Is Installed" }
     }
   },
   "options": {

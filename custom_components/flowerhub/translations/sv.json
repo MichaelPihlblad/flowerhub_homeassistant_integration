@@ -1,0 +1,44 @@
+{
+  "title": "Flowerhub",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfigurera Flowerhub",
+        "data": {
+          "username": "Användarnamn",
+          "password": "Lösenord"
+        },
+        "data_description": {
+          "username": "Ditt Flowerhub-användarnamn",
+          "password": "Ditt Flowerhub-lösenord"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kunde inte ansluta. Kontrollera dina uppgifter.",
+      "missing_library": "Biblioteket flowerhub-client är inte installerat. Installera det först."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": { "name": "Anslutningsstatus" },
+      "last_updated": { "name": "Senast uppdaterad" },
+      "inverter_name": { "name": "Växelriktarens namn" },
+      "battery_name": { "name": "Batterinamn" },
+      "power_capacity": { "name": "Effektkapacitet" },
+      "energy_capacity": { "name": "Energikapacitet" },
+      "fuse_size": { "name": "Säkringsstorlek" },
+      "is_installed": { "name": "Installerad" }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alternativ",
+        "data": {
+          "scan_interval": "Skanningsintervall (sekunder)"
+        }
+      }
+    }
+  }
+}

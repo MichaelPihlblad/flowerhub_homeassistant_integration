@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 ## [0.3.1] - 2025-12-19
-- Use short names for sensors in UI Dashboards
+### Changed
+- Use short names for sensors in UI Dashboards (via `_attr_has_entity_name`).
+- Refactored sensors to use `SensorEntityDescription` and a shared base class.
+
+### Added
+- Translation keys for all sensors; UI names now localized.
+- Swedish translations (`sv.json`) for sensors and config/options flows.
 
 ## [0.3.0] - 2025-12-18
 
