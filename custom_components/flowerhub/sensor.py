@@ -35,6 +35,11 @@ async def async_setup_entry(hass, entry, async_add_entities):
             FlowerhubEnergyCapacitySensor(coordinator, entry),
             FlowerhubFuseSizeSensor(coordinator, entry),
             FlowerhubIsInstalledSensor(coordinator, entry),
+            FlowerhubInverterManufacturerSensor(coordinator, entry),
+            FlowerhubInverterBatteryStacksSensor(coordinator, entry),
+            FlowerhubBatteryManufacturerSensor(coordinator, entry),
+            FlowerhubBatteryMaxModulesSensor(coordinator, entry),
+            FlowerhubBatteryPowerCapacitySensor(coordinator, entry),
         ],
         True,
     )
@@ -213,3 +218,85 @@ class FlowerhubIsInstalledSensor(FlowerhubBaseSensor):
     def state(self):
         is_installed = self.coordinator.data.get("is_installed")
         return "Yes" if is_installed else "No"
+
+
+class FlowerhubInverterManufacturerSensor(FlowerhubBaseSensor):
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="inverter_manufacturer",
+            translation_key="inverter_manufacturer",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_inverter_manufacturer"
+
+    @property
+    def state(self):
+        inverter = self.coordinator.data.get("inverter", {})
+        return inverter.get("manufacturerName")
+
+
+class FlowerhubInverterBatteryStacksSensor(FlowerhubBaseSensor):
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="inverter_battery_stacks",
+            translation_key="inverter_battery_stacks",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_inverter_battery_stacks"
+
+    @property
+    def state(self):
+        inverter = self.coordinator.data.get("inverter", {})
+        return inverter.get("numberOfBatteryStacksSupported")
+
+
+class FlowerhubBatteryManufacturerSensor(FlowerhubBaseSensor):
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="battery_manufacturer",
+            translation_key="battery_manufacturer",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_battery_manufacturer"
+
+    @property
+    def state(self):
+        battery = self.coordinator.data.get("battery", {})
+        return battery.get("manufacturerName")
+
+
+class FlowerhubBatteryMaxModulesSensor(FlowerhubBaseSensor):
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="battery_max_modules",
+            translation_key="battery_max_modules",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_battery_max_modules"
+
+    @property
+    def state(self):
+        battery = self.coordinator.data.get("battery", {})
+        return battery.get("maxNumberOfBatteryModules")
+
+
+class FlowerhubBatteryPowerCapacitySensor(FlowerhubBaseSensor):
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="battery_power_capacity",
+            translation_key="battery_power_capacity",
+            device_class=SensorDeviceClass.POWER,
+            native_unit_of_measurement=UnitOfPower.KILO_WATT,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_battery_power_capacity"
+
+    @property
+    def native_value(self):
+        battery = self.coordinator.data.get("battery", {})
+        return battery.get("powerCapacity")

@@ -28,7 +28,12 @@
       "power_capacity": { "name": "Power Capacity" },
       "energy_capacity": { "name": "Energy Capacity" },
       "fuse_size": { "name": "Fuse Size" },
-      "is_installed": { "name": "Is Installed" }
+      "is_installed": { "name": "Is Installed" },
+      "inverter_manufacturer": { "name": "Inverter Manufacturer" },
+      "inverter_battery_stacks": { "name": "Inverter Battery Stacks Supported" },
+      "battery_manufacturer": { "name": "Battery Manufacturer" },
+      "battery_max_modules": { "name": "Battery Max Modules" },
+      "battery_power_capacity": { "name": "Battery Power Capacity" }
     }
   },
   "options": {

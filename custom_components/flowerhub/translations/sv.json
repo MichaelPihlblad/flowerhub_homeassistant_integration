@@ -28,7 +28,12 @@
       "power_capacity": { "name": "Effektkapacitet" },
       "energy_capacity": { "name": "Energikapacitet" },
       "fuse_size": { "name": "Säkringsstorlek" },
-      "is_installed": { "name": "Installerad" }
+      "is_installed": { "name": "Installerad" },
+      "inverter_manufacturer": { "name": "Växelriktarens tillverkare" },
+      "inverter_battery_stacks": { "name": "Växelriktare batteribankar stöd" },
+      "battery_manufacturer": { "name": "Batteritillverkare" },
+      "battery_max_modules": { "name": "Batteri max moduler" },
+      "battery_power_capacity": { "name": "Batteriets effektkapacitet" }
     }
   },
   "options": {

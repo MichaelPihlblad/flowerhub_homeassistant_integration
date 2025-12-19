@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Translation keys for all sensors; UI names now localized.
 - Swedish translations (`sv.json`) for sensors and config/options flows.
+- Six new diagnostic sensors: inverter manufacturer, battery stacks supported, battery manufacturer, battery max modules, and battery power capacity.
 
 ## [0.3.0] - 2025-12-18
 
