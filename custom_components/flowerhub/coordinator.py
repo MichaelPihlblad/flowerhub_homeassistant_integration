@@ -103,27 +103,33 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 raise UpdateFailed(err) from err
 
         status = self.client.flowerhub_status
-        asset_info = self.client.asset_info
+        asset_info = self.client.asset_info or {}
+        inverter = asset_info.get("inverter", {}) or {}
+        battery = asset_info.get("battery", {}) or {}
         return {
+            # Status info
             "status": status.status if status else None,
             "message": status.message if status else None,
             "last_updated": status.updated_at.isoformat()
             if status and status.updated_at
             else None,
-            "inverter_name": asset_info.get("inverter", {}).get("name")
-            if asset_info
-            else None,
-            "battery_name": asset_info.get("battery", {}).get("name")
-            if asset_info
-            else None,
-            "power_capacity": asset_info.get("inverter", {}).get("powerCapacity")
-            if asset_info
-            else None,
-            "energy_capacity": asset_info.get("battery", {}).get("energyCapacity")
-            if asset_info
-            else None,
-            "fuse_size": asset_info.get("fuseSize") if asset_info else None,
-            "is_installed": asset_info.get("isInstalled") if asset_info else None,
+            # Core asset details (mirrors client.asset_info)
+            "inverter": inverter or None,
+            "battery": battery or None,
+            "fuse_size": asset_info.get("fuseSize"),
+            "is_installed": asset_info.get("isInstalled"),
+            # Convenience flattened fields derived from inverter/battery
+            "inverter_name": inverter.get("name"),
+            "inverter_manufacturer": inverter.get("manufacturerName"),
+            "inverter_battery_stacks_supported": inverter.get(
+                "numberOfBatteryStacksSupported"
+            ),
+            "power_capacity": inverter.get("powerCapacity"),
+            "battery_name": battery.get("name"),
+            "battery_manufacturer": battery.get("manufacturerName"),
+            "battery_max_modules": battery.get("maxNumberOfBatteryModules"),
+            "battery_power_capacity": battery.get("powerCapacity"),
+            "energy_capacity": battery.get("energyCapacity"),
         }
 
     def _is_auth_error(self, err: Exception) -> bool:

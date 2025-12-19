@@ -65,10 +65,44 @@ class FlowerhubBaseSensor(SensorEntity):
 
     @property
     def device_info(self):
-        data = self.coordinator.data
-        hw_version = None
-        if data.get("inverter_name") and data.get("battery_name"):
-            hw_version = f"{data['inverter_name']} / {data['battery_name']}"
+        data = getattr(self.coordinator, "data", {}) or {}
+        client = getattr(self.coordinator, "client", None)
+
+        # Prefer client-exposed properties; fall back to coordinator data
+        inverter_name = (
+            getattr(client, "inverter_name", None) if client else None
+        ) or data.get("inverter_name")
+        inverter_manufacturer = (
+            getattr(client, "inverter_manufacturer", None) if client else None
+        ) or data.get("inverter_manufacturer")
+        battery_name = (
+            getattr(client, "battery_name", None) if client else None
+        ) or data.get("battery_name")
+        battery_manufacturer = (
+            getattr(client, "battery_manufacturer", None) if client else None
+        ) or data.get("battery_manufacturer")
+
+        hw_parts = []
+        if inverter_name or inverter_manufacturer:
+            hw_parts.append(
+                f"Inverter: {inverter_manufacturer or ''} {inverter_name or ''}".strip()
+            )
+        if battery_name or battery_manufacturer:
+            hw_parts.append(
+                f"Battery: {battery_manufacturer or ''} {battery_name or ''}".strip()
+            )
+
+        # Optionally include asset identifiers if available on the client
+        asset_id = getattr(client, "asset_id", None) if client else None
+        asset_owner_id = getattr(client, "asset_owner_id", None) if client else None
+
+        if asset_id:
+            hw_parts.append(f"Asset ID: {asset_id}")
+        if asset_owner_id:
+            hw_parts.append(f"Owner ID: {asset_owner_id}")
+
+        hw_version = " | ".join(hw_parts) if hw_parts else None
+
         return {
             "identifiers": {(DOMAIN, self._config_entry.entry_id)},
             "name": DEFAULT_NAME,

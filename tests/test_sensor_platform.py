@@ -27,6 +27,13 @@ class FakeCoordinator:
             "fuse_size": 16,
             "is_installed": True,
         }
+        self.client = FakeClient()
+
+
+class FakeClient:
+    def __init__(self):
+        self.asset_id = 75
+        self.asset_owner_id = 32
 
 
 class FakeEntry:
