@@ -4,6 +4,7 @@
     "step": {
       "user": {
         "title": "Configure Flowerhub",
+            "description": "Log in with your Flowerhub portal credentials. You can manage your account at {portal_link}.",
         "data": {
           "username": "Username",
           "password": "Password"
