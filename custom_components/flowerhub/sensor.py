@@ -42,7 +42,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 class FlowerhubBaseSensor(SensorEntity):
     _attr_has_entity_name = True
-    _device_model = "Electric grid battery balance system"
+    _device_model = "Powergrid balancing system"
 
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
