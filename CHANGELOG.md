@@ -1,6 +1,8 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.3.1] - 2025-12-19
+- Use short names for sensors in UI Dashboards
 
 ## [0.3.0] - 2025-12-18
 
