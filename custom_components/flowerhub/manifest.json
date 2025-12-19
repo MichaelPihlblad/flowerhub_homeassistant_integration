@@ -2,7 +2,7 @@
   "domain": "flowerhub",
   "name": "Flowerhub",
   "config_flow": true,
-  "version": "0.3.1",
+  "version": "0.4.0",
   "documentation": "https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration",
   "issue_tracker": "https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration/issues",
   "requirements": ["flowerhub-portal-api-client>=0.3.2"],
