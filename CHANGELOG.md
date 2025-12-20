@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2025-12-20
+### Fixed
+- Removed test-only `sensor.flowerhub_status` creation from the integration init to prevent a duplicate non-device-associated status entity.
+
+### Changed
+
+
 ## [0.4.0] - 2025-12-19
 ### Changed
 - Use short names for sensors in UI Dashboards (via `_attr_has_entity_name`).

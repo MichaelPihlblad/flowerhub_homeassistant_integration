@@ -48,23 +48,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     except Exception:
-        pass  # In tests, platforms aren't loaded, so skip
-
-    # For tests: expose a sensor state based on the coordinator's data
-    # In real HA, the platform will create the entity
-    entity_id = "sensor.flowerhub_status"
-
-    def _update_state() -> None:
-        data = coordinator.data or {}
-        status = data.get("status")
-        message = data.get("message")
-        hass.states.async_set(entity_id, status, {"message": message})
-
-    remove_listener = coordinator.async_add_listener(_update_state)
-    _update_state()
-
-    # Store listener for cleanup
-    hass.data[DOMAIN][entry.entry_id]["remove_listener"] = remove_listener
+        # In tests, platforms aren't loaded.
+        # create test specific behavior here if needed
+        pass
 
     return True
 
