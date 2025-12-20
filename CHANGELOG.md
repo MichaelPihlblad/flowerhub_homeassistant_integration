@@ -4,10 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [0.4.1] - 2025-12-20
 ### Fixed
-- Removed test-only `sensor.flowerhub_status` creation from the integration init to prevent a duplicate non-device-associated status entity.
+- Removed test-only `sensor.flowerhub_status` , duplicate non-device-associated entity that was added by mistake.
+- Improved handling of API errors
+
+### Added
+- Connection status sensor now has a `last_updated` attribute with timestamp to get sensor last updated info to reflect API data freshnes, alongside existing diagnostic sensor "Data Last updated".
 
 ### Changed
-
+- Renamed device to "Flowerhub", earlier "Flowerhub system". To keep friendly name shorter in UI dashboard
+- Set connection status sensor to unavailable when not updated successfuly and aged.
 
 ## [0.4.0] - 2025-12-19
 ### Changed
