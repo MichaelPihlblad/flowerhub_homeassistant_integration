@@ -4,6 +4,7 @@ import logging
 from time import monotonic
 from typing import Any
 
+from flowerhub_portal_api_client import AsyncFlowerhubClient
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 try:  # Prefer explicit exception types from the client when available
@@ -49,7 +50,7 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
             update_method=self._async_update,
             update_interval=update_interval,
         )
-        self.client = client
+        self.client: AsyncFlowerhubClient = client
         self._username = username
         self._password = password
         self._first_update = True
@@ -86,11 +87,36 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             if self._first_update:
                 LOGGER.debug("Flowerhub coordinator running initial readout sequence")
-                await self.client.async_readout_sequence()
+                readout = await self.client.async_readout_sequence()
+                # Validate readout results
+                has_asset_info = bool(getattr(self.client, "asset_info", None))
+                if not readout or not readout.get("asset_id"):
+                    if not has_asset_info:
+                        raise UpdateFailed("Readout did not return a valid asset_id")
+                if readout and readout.get("asset_resp") is not None:
+                    resp = readout.get("asset_resp")
+                    try:
+                        status_code = resp.status
+                    except Exception:
+                        status_code = None
+                    if status_code is None or status_code >= 400:
+                        raise UpdateFailed(
+                            f"Asset fetch failed during readout (status {status_code})"
+                        )
                 self._first_update = False
             else:
                 LOGGER.debug("Flowerhub coordinator fetching asset data")
-                await self.client.async_fetch_asset()
+                resp = await self.client.async_fetch_asset()
+                status_code = None
+                try:
+                    status_code = resp.status if resp is not None else None
+                except Exception:
+                    status_code = None
+                has_asset_info = bool(getattr(self.client, "asset_info", None))
+                if (status_code is None and not has_asset_info) or (
+                    status_code is not None and status_code >= 400
+                ):
+                    raise UpdateFailed(f"Asset fetch failed (status {status_code})")
         except Exception as err:
             # Try to detect auth-related failures and recover automatically
             if self._is_auth_error(err):
@@ -107,6 +133,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
 
         status = self.client.flowerhub_status
         asset_info = self.client.asset_info or {}
+        # Require flowerHubStatus.status to be present and not None or empty
+        if not status or not status.status:
+            raise UpdateFailed("FlowerHub status missing in asset data")
         inverter = asset_info.get("inverter", {}) or {}
         battery = asset_info.get("battery", {}) or {}
         # Mark last successful update timestamp

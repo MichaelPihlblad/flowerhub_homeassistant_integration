@@ -48,7 +48,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class FlowerhubBaseSensor(SensorEntity):
     _attr_has_entity_name = True
     _device_model = "Powergrid balancing system"
-    _attr_force_update = True
 
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
@@ -121,6 +120,8 @@ class FlowerhubBaseSensor(SensorEntity):
 
 
 class FlowerhubStatusSensor(FlowerhubBaseSensor):
+    _attr_force_update = True
+
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
         self.entity_description = SensorEntityDescription(
