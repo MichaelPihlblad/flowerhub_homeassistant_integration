@@ -120,8 +120,6 @@ class FlowerhubBaseSensor(SensorEntity):
 
 
 class FlowerhubStatusSensor(FlowerhubBaseSensor):
-    _attr_force_update = True
-
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
         self.entity_description = SensorEntityDescription(
@@ -156,7 +154,10 @@ class FlowerhubStatusSensor(FlowerhubBaseSensor):
 
     @property
     def extra_state_attributes(self):
-        return {"message": self.coordinator.data.get("message")}
+        return {
+            "message": self.coordinator.data.get("message"),
+            "last_updated": self.coordinator.data.get("last_updated"),
+        }
 
 
 class FlowerhubLastUpdatedSensor(FlowerhubBaseSensor):
