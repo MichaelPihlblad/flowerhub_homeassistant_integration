@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from time import monotonic
 from typing import Any
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -52,6 +53,8 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         self._username = username
         self._password = password
         self._first_update = True
+        # Track last successful update time (monotonic seconds)
+        self._last_success_monotonic: float | None = None
         explicit_types = [
             FHAuthenticationError,
             globals().get("FHAuthError"),
@@ -106,6 +109,8 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         asset_info = self.client.asset_info or {}
         inverter = asset_info.get("inverter", {}) or {}
         battery = asset_info.get("battery", {}) or {}
+        # Mark last successful update timestamp
+        self._last_success_monotonic = monotonic()
         return {
             # Status info
             "status": status.status if status else None,

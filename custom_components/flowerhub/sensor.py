@@ -48,6 +48,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class FlowerhubBaseSensor(SensorEntity):
     _attr_has_entity_name = True
     _device_model = "Powergrid balancing system"
+    _attr_force_update = True
 
     def __init__(self, coordinator, entry):
         self.coordinator = coordinator
@@ -115,6 +116,7 @@ class FlowerhubBaseSensor(SensorEntity):
 
     @property
     def available(self) -> bool:
+        # Default HA behavior for most sensors
         return self.coordinator.last_update_success
 
 
@@ -126,6 +128,26 @@ class FlowerhubStatusSensor(FlowerhubBaseSensor):
             translation_key="status",
         )
         self._attr_unique_id = f"{entry.entry_id}_status"
+
+    @property
+    def available(self) -> bool:
+        # For connection status only: consider entity unavailable
+        # if no successful update occurred within 3x the update interval
+        coord = self.coordinator
+        try:
+            interval = getattr(coord, "update_interval", None)
+            interval_sec = float(interval.total_seconds()) if interval else 60.0
+        except Exception:
+            interval_sec = 60.0
+
+        last_success = getattr(coord, "_last_success_monotonic", None)
+        if last_success is None:
+            return bool(getattr(coord, "last_update_success", False))
+
+        from time import monotonic
+
+        age = monotonic() - last_success
+        return age <= (3.0 * interval_sec)
 
     @property
     def state(self):
