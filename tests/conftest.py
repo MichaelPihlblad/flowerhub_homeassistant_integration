@@ -40,6 +40,8 @@ class FakeAsyncFlowerhubClient:
         self.flowerhub_status = FakeStatus(status="initial", message="ok")
         self._counter = 0
         self.stopped = False
+        self.asset_id = 75
+        self.asset_owner_id = 32
         self.asset_info = {
             "inverter": {"name": "SUN2000 M1", "powerCapacity": 10},
             "battery": {"name": "LUNA2000 S0", "energyCapacity": 15},
@@ -57,6 +59,24 @@ class FakeAsyncFlowerhubClient:
         self.flowerhub_status = FakeStatus(
             status=f"state_{self._counter}", message="ok"
         )
+        # Return TypedDict structure matching new library API
+        self.asset_id = 75
+        self.asset_owner_id = 32
+        return {
+            "asset_owner_id": self.asset_owner_id,
+            "asset_id": self.asset_id,
+            "with_asset_resp": {
+                "status_code": 200,
+                "asset_id": self.asset_id,
+                "error": None,
+            },
+            "asset_resp": {
+                "status_code": 200,
+                "asset_info": self.asset_info,
+                "flowerhub_status": self.flowerhub_status,
+                "error": None,
+            },
+        }
 
     async def async_fetch_asset(self):
         # Simulate periodic polling with new status
@@ -64,6 +84,13 @@ class FakeAsyncFlowerhubClient:
         self.flowerhub_status = FakeStatus(
             status=f"state_{self._counter}", message="ok"
         )
+        # Return AssetFetchResult TypedDict
+        return {
+            "status_code": 200,
+            "asset_info": self.asset_info,
+            "flowerhub_status": self.flowerhub_status,
+            "error": None,
+        }
 
     def stop_periodic_asset_fetch(self):
         self.stopped = True

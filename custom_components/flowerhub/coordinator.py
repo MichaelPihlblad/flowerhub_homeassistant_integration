@@ -34,6 +34,47 @@ for _name in (
 LOGGER = logging.getLogger(__name__)
 
 
+def _validate_asset_fetch_result(result: Any, context: str = "result") -> bool:
+    """Validate that result matches AssetFetchResult TypedDict structure.
+
+    Returns True if valid, raises UpdateFailed with details if invalid.
+    """
+    if not isinstance(result, dict):
+        LOGGER.error(
+            "Invalid %s type: expected dict (AssetFetchResult), got %s. "
+            "This may indicate a library version mismatch.",
+            context,
+            type(result).__name__,
+        )
+        raise UpdateFailed(f"Library returned unexpected type: {type(result).__name__}")
+
+    # Validate required keys from AssetFetchResult TypedDict
+    required_keys = {"status_code", "asset_info", "flowerhub_status", "error"}
+    missing_keys = required_keys - set(result.keys())
+
+    if missing_keys:
+        LOGGER.error(
+            "Invalid %s structure: missing required keys %s. "
+            "Present keys: %s. This may indicate a library version mismatch.",
+            context,
+            missing_keys,
+            list(result.keys()),
+        )
+        raise UpdateFailed(f"Library response missing required fields: {missing_keys}")
+
+    # Validate types of key fields
+    if result.get("status_code") is not None and not isinstance(
+        result["status_code"], int
+    ):
+        LOGGER.warning(
+            "Invalid status_code type in %s: expected int, got %s",
+            context,
+            type(result["status_code"]).__name__,
+        )
+
+    return True
+
+
 class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(
         self,
@@ -88,54 +129,124 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
             if self._first_update:
                 LOGGER.debug("Flowerhub coordinator running initial readout sequence")
                 readout = await self.client.async_readout_sequence()
-                # Validate readout results
+                LOGGER.debug("Readout response: %s", readout)
+
+                # Validate readout results - library returns TypedDict
                 has_asset_info = bool(getattr(self.client, "asset_info", None))
                 if not readout or not readout.get("asset_id"):
                     if not has_asset_info:
-                        raise UpdateFailed("Readout did not return a valid asset_id")
-                if readout and readout.get("asset_resp") is not None:
-                    resp = readout.get("asset_resp")
-                    try:
-                        status_code = resp.status
-                    except Exception:
-                        status_code = None
-                    if status_code is None or status_code >= 400:
-                        raise UpdateFailed(
-                            f"Asset fetch failed during readout (status {status_code})"
+                        LOGGER.error(
+                            "Initial readout failed: no asset_id returned. "
+                            "Response type: %s",
+                            type(readout).__name__,
                         )
+                        raise UpdateFailed("Readout did not return a valid asset_id")
+
+                # Check asset_resp TypedDict result from library (v0.4.0+)
+                if readout and readout.get("asset_resp") is not None:
+                    asset_result = readout.get("asset_resp")
+
+                    # Validate AssetFetchResult TypedDict structure
+                    _validate_asset_fetch_result(asset_result, "asset_resp")
+
+                    status_code = asset_result.get("status_code")
+                    error = asset_result.get("error")
+
+                    if status_code and status_code >= 400:
+                        LOGGER.error(
+                            "API returned error status %d during initial readout: %s",
+                            status_code,
+                            error or "no error details",
+                        )
+                        msg = "Asset fetch failed during readout"
+                        if status_code:
+                            msg += f" (HTTP {status_code})"
+                        if error:
+                            msg += f": {error}"
+                        raise UpdateFailed(msg)
+
+                    LOGGER.debug(
+                        "Initial readout successful, status code: %d", status_code or 0
+                    )
                 self._first_update = False
             else:
                 LOGGER.debug("Flowerhub coordinator fetching asset data")
-                resp = await self.client.async_fetch_asset()
-                status_code = None
-                try:
-                    status_code = resp.status if resp is not None else None
-                except Exception:
-                    status_code = None
+                # async_fetch_asset returns AssetFetchResult TypedDict (v0.4.0+)
+                result = await self.client.async_fetch_asset()
+
+                # Validate AssetFetchResult TypedDict structure
+                _validate_asset_fetch_result(result, "async_fetch_asset result")
+
+                status_code = result.get("status_code")
+                error = result.get("error")
                 has_asset_info = bool(getattr(self.client, "asset_info", None))
-                if (status_code is None and not has_asset_info) or (
-                    status_code is not None and status_code >= 400
-                ):
-                    raise UpdateFailed(f"Asset fetch failed (status {status_code})")
+
+                if status_code and status_code >= 400:
+                    LOGGER.error(
+                        "API returned error status %d: %s",
+                        status_code,
+                        error or "no error details",
+                    )
+                    msg = f"Asset fetch failed (HTTP {status_code})"
+                    if error:
+                        msg += f": {error}"
+                    raise UpdateFailed(msg)
+
+                if not status_code and not has_asset_info:
+                    LOGGER.warning(
+                        "Asset fetch missing status_code with no cached asset_info. "
+                        "Keys: %s",
+                        list(result.keys()),
+                    )
+                    raise UpdateFailed(
+                        "Asset fetch returned no status and client has no cached data"
+                    )
+
+                LOGGER.debug(
+                    "Asset fetch successful, status code: %d", status_code or 0
+                )
         except Exception as err:
             # Try to detect auth-related failures and recover automatically
             if self._is_auth_error(err):
-                LOGGER.warning("Flowerhub auth error detected; attempting re-auth")
+                LOGGER.warning(
+                    "Authentication error detected (type: %s): %s - attempting re-auth",
+                    type(err).__name__,
+                    err,
+                )
                 try:
                     await self._reauth_and_prime()
-                    LOGGER.info("Flowerhub re-authentication succeeded; data primed")
+                    LOGGER.info(
+                        "Automatic re-authentication successful; client state restored"
+                    )
                 except Exception as reauth_err:
+                    LOGGER.error(
+                        "Re-authentication failed: %s (%s)",
+                        reauth_err,
+                        type(reauth_err).__name__,
+                    )
                     raise UpdateFailed(
                         f"Re-authentication failed: {reauth_err}"
                     ) from reauth_err
             else:
+                LOGGER.error(
+                    "Update failed with %s: %s", type(err).__name__, err, exc_info=True
+                )
                 raise UpdateFailed(err) from err
 
         status = self.client.flowerhub_status
         asset_info = self.client.asset_info or {}
+
         # Require flowerHubStatus.status to be present and not None or empty
-        if not status or not status.status:
-            raise UpdateFailed("FlowerHub status missing in asset data")
+        if not status:
+            LOGGER.error("Client flowerhub_status is None after successful fetch")
+            raise UpdateFailed("FlowerHub status object missing in client")
+
+        if not status.status:
+            LOGGER.error(
+                "FlowerHub status.status field is empty. Status object: %s",
+                status.__dict__ if hasattr(status, "__dict__") else status,
+            )
+            raise UpdateFailed("FlowerHub status field is empty in response data")
         inverter = asset_info.get("inverter", {}) or {}
         battery = asset_info.get("battery", {}) or {}
         # Mark last successful update timestamp

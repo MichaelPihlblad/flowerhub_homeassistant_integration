@@ -97,10 +97,12 @@ async def async_get_config_entry_diagnostics(
 
     try:
         readout = await client.async_readout_sequence()
+        # readout["asset_resp"] is now AssetFetchResult TypedDict
+        asset_resp = readout.get("asset_resp") if readout else None
         return {
-            "asset_owner_information": readout["with_asset_resp"]["json"],
-            "hardware_asset_details": readout["asset_resp"]["json"]
-            if readout["asset_resp"]
+            "asset_owner_information": readout.get("with_asset_resp"),
+            "hardware_asset_details": asset_resp.get("asset_info")
+            if asset_resp
             else None,
             "client_connection_state": {
                 "asset_owner_id": client.asset_owner_id,

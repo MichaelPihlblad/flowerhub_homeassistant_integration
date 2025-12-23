@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2025-12-23
+### Changed
+- Require `flowerhub-portal-api-client>=0.4.0` and adapt coordinator to library breaking change, TypedDict responses instead of aiohttp objects.
+- Test fixtures updated to return the new TypedDict structures
+- Added explicit runtime validation for API result structures in coordinator.
+- Enhanced logging around fetch/readout/auth flows to distinguish HTTP errors, parse issues, and missing data.
+
+
 ## [0.4.1] - 2025-12-20
 ### Fixed
 - Removed test-only `sensor.flowerhub_status` , duplicate non-device-associated entity that was added by mistake.
