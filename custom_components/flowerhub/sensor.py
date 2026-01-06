@@ -106,7 +106,7 @@ class FlowerhubBaseSensor(SensorEntity):
         return {
             "identifiers": {(DOMAIN, self._config_entry.entry_id)},
             "name": DEFAULT_NAME,
-            "manufacturer": "FlowerHub",
+            "manufacturer": "Flowerhub",
             "model": self._device_model,
             "hw_version": hw_version,
             "sw_version": None,

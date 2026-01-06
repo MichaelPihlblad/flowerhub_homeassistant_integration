@@ -82,7 +82,7 @@ def test_sensor_values_and_device_info(sensor_cls, expected):
     # Device info contains identifiers and hw_version combined
     info = sensor.device_info
     assert ("identifiers" in info) and info["identifiers"]
-    assert info["manufacturer"] == "FlowerHub"
+    assert info["manufacturer"] == "Flowerhub"
     assert "configuration_url" in info and info["configuration_url"].startswith(
         "https://"
     )

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2026-01-06
+First major release intended for HACS inclusion
+### Added
+- Diagnostics.py to easily download integration diagnostic data from Homeassistant
+### Changed
+- capital H to lowercase in manufacturer string and HACS name to align with Homeassistant brands domain name
+
+
 ## [0.5.0] - 2025-12-23
 ### Changed
 - Require `flowerhub-portal-api-client>=0.4.0` and adapt coordinator to library breaking change, TypedDict responses instead of aiohttp objects.

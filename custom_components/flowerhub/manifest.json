@@ -8,5 +8,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration/issues",
   "requirements": ["flowerhub-portal-api-client>=0.4.0"],
-  "version": "0.5.0"
+  "version": "1.0.0"
 }
