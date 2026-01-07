@@ -49,6 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass,
         client,
         update_interval=timedelta(seconds=scan_interval),
+        entry_id=entry.entry_id,
         username=entry.data.get("username"),
         password=entry.data.get("password"),
     )

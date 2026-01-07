@@ -67,6 +67,59 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             },
         )
 
+    async def async_step_reauth(self, entry_data: dict[str, Any] | None = None):
+        """Handle reauthentication when credentials are no longer valid."""
+        # Locate the existing entry from context
+        entry_id = self.context.get("entry_id")
+        self._reauth_entry = (
+            self.hass.config_entries.async_get_entry(entry_id) if entry_id else None
+        )
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input: dict[str, Any] | None = None):
+        """Confirm new credentials for reauthentication."""
+        errors: dict[str, str] = {}
+        data_schema = vol.Schema(
+            {
+                vol.Required("username"): str,
+                vol.Required("password"): str,
+            }
+        )
+
+        if user_input is not None:
+            username = user_input["username"]
+            password = user_input["password"]
+            try:
+                from flowerhub_portal_api_client import AsyncFlowerhubClient
+
+                session = async_get_clientsession(self.hass)
+                client = AsyncFlowerhubClient(session=session)
+                await client.async_login(username, password)
+                # Prime the client to ensure credentials are valid
+                await client.async_readout_sequence()
+            except Exception:
+                errors["base"] = "cannot_connect"
+            else:
+                # Update the existing entry with new credentials
+                if getattr(self, "_reauth_entry", None):
+                    self.hass.config_entries.async_update_entry(
+                        self._reauth_entry,
+                        data={"username": username, "password": password},
+                    )
+                    return self.async_abort(reason="reauth_successful")
+                # Fallback: create a new entry if original could not be found
+                return self.async_create_entry(
+                    title=DEFAULT_NAME,
+                    description="Login using Flowerhub portal account credentials",
+                    data={"username": username, "password": password},
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=data_schema,
+            errors=errors,
+        )
+
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:

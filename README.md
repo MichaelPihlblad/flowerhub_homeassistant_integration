@@ -1,6 +1,7 @@
 # FlowerHub Home Assistant Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![Test](https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration/actions/workflows/test.yml/badge.svg)](https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration/actions/workflows/test.yml)
 
 This integration allows you to integrate your FlowerHub powergrid battery balancing system with Home Assistant, providing real-time monitoring of your system status.
 

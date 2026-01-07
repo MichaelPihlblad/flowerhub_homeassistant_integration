@@ -15,9 +15,18 @@
         }
       }
     },
+    "abort": {
+      "reauth_successful": "Återautentisering lyckades"
+    },
     "error": {
       "cannot_connect": "Kunde inte ansluta. Kontrollera dina uppgifter.",
       "missing_library": "Biblioteket flowerhub-client är inte installerat. Installera det först."
+    }
+  },
+  "issues": {
+    "server_update_failures": {
+      "title": "FlowerHub uppdateringar misslyckas",
+      "description": "Upprepade uppdateringsfel har upptäckts (antal: {count}). Senaste fel: {last_error}. Detta tyder sannolikt på ett backend-avbrott eller anslutningsproblem. Problemet rensas automatiskt när uppdateringar lyckas."
     }
   },
   "entity": {
