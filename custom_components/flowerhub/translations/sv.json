@@ -50,9 +50,16 @@
     "step": {
       "init": {
         "title": "Alternativ",
-        "description": "Välj hur ofta FlowerHub ska pollas (minimum {min}s, maximum {max}s).",
+        "description": "Uppdatera inloggningsuppgifter och pollningsintervall. Välj hur ofta FlowerHub ska pollas (minimum {min}s, maximum {max}s).",
         "data": {
+          "username": "Användarnamn",
+          "password": "Lösenord",
           "scan_interval": "Skanningsintervall (sekunder)"
+        },
+        "data_description": {
+          "username": "Ditt Flowerhub-användarnamn (ändra vid behov)",
+          "password": "Ditt Flowerhub-lösenord (ange för att uppdatera uppgifter)",
+          "scan_interval": "Hur ofta data ska hämtas från FlowerHub"
         }
       }
     }

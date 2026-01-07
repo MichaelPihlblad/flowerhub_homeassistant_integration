@@ -128,20 +128,69 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self._config_entry = config_entry
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
+        errors: dict[str, str] = {}
+        # Get current credentials from config entry
+        current_username = self._config_entry.data.get("username", "")
+        current_password = self._config_entry.data.get("password", "")
+        current_scan_interval = self._config_entry.options.get("scan_interval", 60)
+
         options_schema = vol.Schema(
             {
-                "scan_interval": vol.All(
+                vol.Required("username", default=current_username): str,
+                vol.Optional("password"): str,
+                vol.Required("scan_interval", default=current_scan_interval): vol.All(
                     vol.Coerce(int),
                     vol.Range(min=SCAN_INTERVAL_MIN, max=SCAN_INTERVAL_MAX),
-                )
+                ),
             }
         )
+
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            username = user_input["username"]
+            password = user_input.get("password", "")
+            scan_interval = user_input["scan_interval"]
+
+            # Check if credentials need validation:
+            # - Username changed, OR
+            # - Password field is not empty AND different from current password
+            credentials_changed = username != current_username or (
+                password and password != current_password
+            )
+
+            if credentials_changed:
+                try:
+                    from flowerhub_portal_api_client import AsyncFlowerhubClient
+
+                    session = async_get_clientsession(self.hass)
+                    client = AsyncFlowerhubClient(session=session)
+                    # Use new password if provided, otherwise keep current password
+                    password_to_validate = password if password else current_password
+                    await client.async_login(username, password_to_validate)
+                    await client.async_readout_sequence()
+                except Exception:
+                    errors["base"] = "cannot_connect"
+                else:
+                    # Update config entry data with new credentials
+                    # Use new password if provided, otherwise keep current password
+                    password_to_save = password if password else current_password
+                    self.hass.config_entries.async_update_entry(
+                        self._config_entry,
+                        data={"username": username, "password": password_to_save},
+                    )
+                    # Save options (scan_interval)
+                    return self.async_create_entry(
+                        title="", data={"scan_interval": scan_interval}
+                    )
+            else:
+                # Only scan_interval changed, save options
+                return self.async_create_entry(
+                    title="", data={"scan_interval": scan_interval}
+                )
 
         return self.async_show_form(
             step_id="init",
             data_schema=options_schema,
+            errors=errors,
             description_placeholders={
                 "min": SCAN_INTERVAL_MIN,
                 "max": SCAN_INTERVAL_MAX,

@@ -50,9 +50,16 @@
     "step": {
       "init": {
         "title": "Options",
-        "description": "Choose how often to poll FlowerHub (minimum {min}s, maximum {max}s).",
+        "description": "Update credentials and polling interval. Choose how often to poll FlowerHub (minimum {min}s, maximum {max}s).",
         "data": {
+          "username": "Username",
+          "password": "Password",
           "scan_interval": "Scan interval (seconds)"
+        },
+        "data_description": {
+          "username": "Your Flowerhub username (change if needed)",
+          "password": "Your Flowerhub password (enter to update credentials)",
+          "scan_interval": "How often to fetch data from FlowerHub"
         }
       }
     }
