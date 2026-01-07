@@ -32,6 +32,7 @@
   "entity": {
     "sensor": {
       "status": { "name": "Anslutningsstatus" },
+      "status_message": { "name": "Statusmeddelande" },
       "last_updated": { "name": "Senast uppdaterad" },
       "inverter_name": { "name": "Växelriktarens namn" },
       "battery_name": { "name": "Batterinamn" },

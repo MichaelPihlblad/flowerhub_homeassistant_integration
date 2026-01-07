@@ -9,6 +9,7 @@ from flowerhub.sensor import (
     FlowerhubIsInstalledSensor,
     FlowerhubLastUpdatedSensor,
     FlowerhubPowerCapacitySensor,
+    FlowerhubStatusMessageSensor,
     FlowerhubStatusSensor,
 )
 
@@ -45,6 +46,7 @@ class FakeEntry:
     "sensor_cls, expected",
     [
         (FlowerhubStatusSensor, ("state_1", {"message": "ok"})),
+        (FlowerhubStatusMessageSensor, ("ok", None)),
         (FlowerhubLastUpdatedSensor, ("timestamp", None)),
         (FlowerhubInverterNameSensor, ("SUN2000 M1", None)),
         (FlowerhubBatteryNameSensor, ("LUNA2000 S0", None)),

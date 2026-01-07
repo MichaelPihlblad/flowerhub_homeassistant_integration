@@ -26,6 +26,7 @@
   "entity": {
     "sensor": {
       "status": { "name": "Connection Status" },
+      "status_message": { "name": "Connection Status Message" },
       "last_updated": { "name": "Data Last Updated" },
       "inverter_name": { "name": "Inverter Name" },
       "battery_name": { "name": "Battery Name" },

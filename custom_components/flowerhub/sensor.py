@@ -28,6 +28,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities(
         [
             FlowerhubStatusSensor(coordinator, entry),
+            FlowerhubStatusMessageSensor(coordinator, entry),
             FlowerhubLastUpdatedSensor(coordinator, entry),
             FlowerhubInverterNameSensor(coordinator, entry),
             FlowerhubBatteryNameSensor(coordinator, entry),
@@ -158,6 +159,20 @@ class FlowerhubStatusSensor(FlowerhubBaseSensor):
             "message": self.coordinator.data.get("message"),
             "last_updated": self.coordinator.data.get("last_updated"),
         }
+
+
+class FlowerhubStatusMessageSensor(FlowerhubBaseSensor):
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="status_message",
+            translation_key="status_message",
+        )
+        self._attr_unique_id = f"{entry.entry_id}_status_message"
+
+    @property
+    def state(self):
+        return self.coordinator.data.get("message")
 
 
 class FlowerhubLastUpdatedSensor(FlowerhubBaseSensor):
