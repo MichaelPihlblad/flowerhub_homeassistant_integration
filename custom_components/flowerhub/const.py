@@ -1,3 +1,5 @@
 DOMAIN = "flowerhub"
 DEFAULT_NAME = "FlowerHub"
 PLATFORMS = ["sensor"]
+SCAN_INTERVAL_MIN = 5
+SCAN_INTERVAL_MAX = 86400

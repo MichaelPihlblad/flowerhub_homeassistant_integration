@@ -10,7 +10,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DEFAULT_NAME, DOMAIN
+from .const import DEFAULT_NAME, DOMAIN, SCAN_INTERVAL_MAX, SCAN_INTERVAL_MIN
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -75,11 +75,25 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self._config_entry = config_entry
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
-        options_schema = vol.Schema({"scan_interval": int})
+        options_schema = vol.Schema(
+            {
+                "scan_interval": vol.All(
+                    vol.Coerce(int),
+                    vol.Range(min=SCAN_INTERVAL_MIN, max=SCAN_INTERVAL_MAX),
+                )
+            }
+        )
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        return self.async_show_form(step_id="init", data_schema=options_schema)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=options_schema,
+            description_placeholders={
+                "min": SCAN_INTERVAL_MIN,
+                "max": SCAN_INTERVAL_MAX,
+            },
+        )
 
 
 async def async_get_options_flow(

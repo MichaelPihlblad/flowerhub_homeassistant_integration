@@ -41,6 +41,7 @@
     "step": {
       "init": {
         "title": "Alternativ",
+        "description": "Välj hur ofta FlowerHub ska pollas (minimum {min}s, maximum {max}s).",
         "data": {
           "scan_interval": "Skanningsintervall (sekunder)"
         }

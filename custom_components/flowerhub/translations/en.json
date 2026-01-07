@@ -41,6 +41,7 @@
     "step": {
       "init": {
         "title": "Options",
+        "description": "Choose how often to poll FlowerHub (minimum {min}s, maximum {max}s).",
         "data": {
           "scan_interval": "Scan interval (seconds)"
         }
