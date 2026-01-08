@@ -1,6 +1,8 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [1.0.1] - 2026-01-08
+Administrative change - remove filename from hacs.json since intended for HACS default standard integration
 
 ## [1.0.0] - 2026-01-06
 First major release intended for HACS inclusion
