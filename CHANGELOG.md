@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Possible to change credentials from integration config view
 - Repair flow for entering new credentials for re-auth triggered during runtime if credentials invalid.
 - Repair error notification without action triggered when failing to fetch data from API
-- Range limit to config option for polling interval (1s-24hours)
+- Range limit to config option for polling interval (5s-24hours)
 ### Fixed
 - Integration config view crashing due to attribute error
 - All auth errors triggered setup repair flow to enter new credentials
