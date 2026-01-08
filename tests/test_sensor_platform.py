@@ -88,3 +88,13 @@ def test_sensor_values_and_device_info(sensor_cls, expected):
     assert "configuration_url" in info and info["configuration_url"].startswith(
         "https://"
     )
+
+
+def test_status_message_camelcase_spacing():
+    coord = FakeCoordinator()
+    coord.data["message"] = "InverterDongleFoundAndComponentsAreRunning"
+    entry = FakeEntry()
+
+    sensor = FlowerhubStatusMessageSensor(coord, entry)
+
+    assert sensor.state == "Inverter Dongle Found And Components Are Running"

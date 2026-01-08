@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 import voluptuous as vol
+from aiohttp import ClientResponseError
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -20,6 +21,17 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 LOGGER = logging.getLogger(__name__)
+
+try:
+    from flowerhub_portal_api_client import (
+        AuthenticationError as FHAuthenticationError,  # type: ignore
+    )
+except Exception:  # pragma: no cover - optional auth exception
+    FHAuthenticationError = None  # type: ignore
+
+AUTH_EXCEPTIONS: tuple[type[Exception], ...] = tuple(
+    t for t in (FHAuthenticationError,) if isinstance(t, type)
+)
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
@@ -97,7 +109,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 await client.async_login(username, password)
                 # Prime the client to ensure credentials are valid
                 await client.async_readout_sequence()
-            except Exception:  # Authentication failure - user will see error message
+            except AUTH_EXCEPTIONS as err:
+                LOGGER.warning("Authentication failed during reauth: %s", err)
+                errors["base"] = "cannot_connect"
+            except ClientResponseError as err:
+                LOGGER.warning(
+                    "HTTP error during reauth (status=%s): %s", err.status, err
+                )
+                errors["base"] = "cannot_connect"
+            except Exception as err:
+                LOGGER.exception("Unexpected error during reauth: %s", err)
                 errors["base"] = "cannot_connect"
             else:
                 # Update the existing entry with new credentials
@@ -168,9 +189,18 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     password_to_validate = password if password else current_password
                     await client.async_login(username, password_to_validate)
                     await client.async_readout_sequence()
-                except (
-                    Exception
-                ):  # Authentication failure - user will see error message
+                except AUTH_EXCEPTIONS as err:
+                    LOGGER.warning("Authentication failed during options save: %s", err)
+                    errors["base"] = "cannot_connect"
+                except ClientResponseError as err:
+                    LOGGER.warning(
+                        "HTTP error during options save (status=%s): %s",
+                        err.status,
+                        err,
+                    )
+                    errors["base"] = "cannot_connect"
+                except Exception as err:
+                    LOGGER.exception("Unexpected error during options save: %s", err)
                     errors["base"] = "cannot_connect"
                 else:
                     # Update config entry data with new credentials

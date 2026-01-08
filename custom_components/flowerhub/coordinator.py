@@ -130,10 +130,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
 
         # If the client supports an auth error callback, hook it to schedule a reauth
         try:
-            if hasattr(self.client, "set_auth_error_callback") and callable(
-                getattr(self.client, "set_auth_error_callback")
-            ):
-                self.client.set_auth_error_callback(self._on_auth_error)
+            callback = getattr(self.client, "set_auth_error_callback", None)
+            if callable(callback):
+                callback(self._on_auth_error)
             elif hasattr(self.client, "on_auth_error"):
                 # Some clients expose a property callback
                 setattr(self.client, "on_auth_error", self._on_auth_error)
@@ -162,6 +161,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 if readout and readout.get("asset_resp") is not None:
                     asset_result = readout.get("asset_resp")
 
+                    if asset_result is None:
+                        raise UpdateFailed("asset_resp missing from readout")
+
                     # Validate AssetFetchResult TypedDict structure
                     _validate_asset_fetch_result(asset_result, "asset_resp")
 
@@ -189,6 +191,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 LOGGER.debug("Flowerhub coordinator fetching asset data")
                 # async_fetch_asset returns AssetFetchResult TypedDict (v0.4.0+)
                 result = await self.client.async_fetch_asset()
+
+                if result is None:
+                    raise UpdateFailed("Asset fetch returned no data")
 
                 # Validate AssetFetchResult TypedDict structure
                 _validate_asset_fetch_result(result, "async_fetch_asset result")
