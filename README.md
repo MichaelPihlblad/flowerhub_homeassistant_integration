@@ -15,17 +15,12 @@ This integration allows you to integrate your FlowerHub powergrid battery balanc
 ### Option 1: HACS (Recommended)
 
 1. Ensure [HACS](https://hacs.xyz/) is installed in your Home Assistant instance.
-2. **Quick Install** (one-click): Click the button below to add this repository automatically:
+2. **Quick Install** (one-click): Click the button below to open this integration in your Home Assistant instance inside HACS:
 
    [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=MichaelPihlblad&repository=flowerhub_homeassistant_integration&category=integration)
 
-3. Or manually add this repository in HACS:
-   - Go to HACS → Integrations
-   - Click the three dots (⋮) → Custom repositories
-   - Add `https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration` as a repository URL
-   - Select "Integration" as the category
-4. Search for "FlowerHub" in HACS and install it.
-5. Restart Home Assistant.
+Or search for "FlowerHub" in HACS and install it.
+3. Restart Home Assistant.
 
 ### Option 2: Manual Installation
 
