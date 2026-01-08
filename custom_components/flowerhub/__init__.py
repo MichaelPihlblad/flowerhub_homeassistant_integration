@@ -22,6 +22,11 @@ from .coordinator import FlowerhubDataUpdateCoordinator
 LOGGER = logging.getLogger(__name__)
 
 
+async def _options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle options update."""
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
     client = AsyncFlowerhubClient(session=session)
@@ -61,6 +66,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "client": client,
         "coordinator": coordinator,
     }
+
+    # Register listener for options updates
+    entry.async_on_unload(entry.add_update_listener(_options_update_listener))
 
     # Forward setup to platforms (skip in tests where integration not loaded)
     try:
