@@ -26,7 +26,7 @@
   "entity": {
     "sensor": {
       "status": { "name": "Connection Status" },
-      "status_message": { "name": "Connection Status Message" },
+      "status_message": { "name": "Status Message" },
       "last_updated": { "name": "Data Last Updated" },
       "inverter_name": { "name": "Inverter Name" },
       "battery_name": { "name": "Battery Name" },
@@ -51,7 +51,7 @@
     "step": {
       "init": {
         "title": "Options",
-        "description": "Update credentials and polling interval. Choose how often to poll FlowerHub (minimum {min}s, maximum {max}s).",
+        "description": "Change credentials or how often to poll FlowerHub API for updating status.",
         "data": {
           "username": "Username",
           "password": "Password",
@@ -60,9 +60,12 @@
         "data_description": {
           "username": "Your Flowerhub username (change if needed)",
           "password": "Your Flowerhub password (enter to update credentials)",
-          "scan_interval": "How often to fetch data from FlowerHub"
+          "scan_interval": "How often to fetch data from FlowerHub (minimum {min}s, maximum {max}s)"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Please check your credentials."
     }
   }
 }

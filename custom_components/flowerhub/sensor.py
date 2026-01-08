@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 
 from homeassistant.components.sensor import (
@@ -167,12 +168,21 @@ class FlowerhubStatusMessageSensor(FlowerhubBaseSensor):
         self.entity_description = SensorEntityDescription(
             key="status_message",
             translation_key="status_message",
+            entity_category=EntityCategory.DIAGNOSTIC,
         )
         self._attr_unique_id = f"{entry.entry_id}_status_message"
 
     @property
     def state(self):
-        return self.coordinator.data.get("message")
+        message = self.coordinator.data.get("message")
+        if not message:
+            return None
+
+        # Convert camelCase to spaced words for better UI wrapping
+        # "InverterDongleFoundAndComponentsAreRunning"
+        #  -> "Inverter Dongle Found And Components Are Running"
+        spaced = re.sub(r"([A-Z])", r" \1", message).strip()
+        return spaced
 
 
 class FlowerhubLastUpdatedSensor(FlowerhubBaseSensor):

@@ -32,7 +32,7 @@
   "entity": {
     "sensor": {
       "status": { "name": "Anslutningsstatus" },
-      "status_message": { "name": "Statusmeddelande" },
+      "status_message": { "name": "Meddelande" },
       "last_updated": { "name": "Senast uppdaterad" },
       "inverter_name": { "name": "Växelriktarens namn" },
       "battery_name": { "name": "Batterinamn" },
@@ -51,7 +51,7 @@
     "step": {
       "init": {
         "title": "Alternativ",
-        "description": "Uppdatera inloggningsuppgifter och pollningsintervall. Välj hur ofta FlowerHub ska pollas (minimum {min}s, maximum {max}s).",
+        "description": "Ändra inloggningsuppgifter eller välj hur ofta status skall uppdateras från FlowerHub portalen",
         "data": {
           "username": "Användarnamn",
           "password": "Lösenord",
@@ -60,9 +60,12 @@
         "data_description": {
           "username": "Ditt Flowerhub-användarnamn (ändra vid behov)",
           "password": "Ditt Flowerhub-lösenord (ange för att uppdatera uppgifter)",
-          "scan_interval": "Hur ofta data ska hämtas från FlowerHub"
+          "scan_interval": "Hur ofta data ska hämtas från FlowerHub (minimum {min}s, maximum {max}s)"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Kunde inte ansluta. Kontrollera dina uppgifter."
     }
   }
 }
