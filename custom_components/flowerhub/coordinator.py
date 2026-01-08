@@ -314,7 +314,7 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 err, self._auth_exception_types
             ):
                 return True
-        except Exception:
+        except Exception:  # pragma: no cover - fallback if isinstance fails
             pass
 
         # Detect HTTP-style auth failures (401/403) when a status is present
@@ -330,7 +330,7 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
 
                 if isinstance(err, ClientResponseError):
                     status = err.status
-            except Exception:
+            except Exception:  # pragma: no cover - aiohttp may not be available
                 pass
         if status is not None:
             if status in (401, 403):
@@ -366,7 +366,7 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 t = getattr(mod, name, None)
                 if isinstance(t, type) and issubclass(t, Exception):
                     types.append(t)
-        except Exception:
+        except Exception:  # pragma: no cover - fallback if module import fails
             pass
         return tuple(types)
 

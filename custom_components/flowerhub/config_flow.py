@@ -97,11 +97,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 await client.async_login(username, password)
                 # Prime the client to ensure credentials are valid
                 await client.async_readout_sequence()
-            except Exception:
+            except Exception:  # Authentication failure - user will see error message
                 errors["base"] = "cannot_connect"
             else:
                 # Update the existing entry with new credentials
                 if getattr(self, "_reauth_entry", None):
+                    assert self._reauth_entry is not None
                     self.hass.config_entries.async_update_entry(
                         self._reauth_entry,
                         data={"username": username, "password": password},
@@ -167,7 +168,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     password_to_validate = password if password else current_password
                     await client.async_login(username, password_to_validate)
                     await client.async_readout_sequence()
-                except Exception:
+                except (
+                    Exception
+                ):  # Authentication failure - user will see error message
                     errors["base"] = "cannot_connect"
                 else:
                     # Update config entry data with new credentials
@@ -192,8 +195,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=options_schema,
             errors=errors,
             description_placeholders={
-                "min": SCAN_INTERVAL_MIN,
-                "max": SCAN_INTERVAL_MAX,
+                "min": str(SCAN_INTERVAL_MIN),
+                "max": str(SCAN_INTERVAL_MAX),
             },
         )
 

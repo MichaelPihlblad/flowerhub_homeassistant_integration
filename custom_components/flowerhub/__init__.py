@@ -43,7 +43,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         status = login_resp.get("status") or login_resp.get("code")
         try:
             status_int = int(status) if status is not None else None
-        except Exception:
+        except (
+            Exception
+        ):  # pragma: no cover - fallback if status is not convertible to int
             status_int = None
         if status_int and status_int >= 400:
             raise ConfigEntryAuthFailed(f"Flowerhub login failed (status {status_int})")

@@ -138,7 +138,7 @@ class FlowerhubStatusSensor(FlowerhubBaseSensor):
         try:
             interval = getattr(coord, "update_interval", None)
             interval_sec = float(interval.total_seconds()) if interval else 60.0
-        except Exception:
+        except Exception:  # pragma: no cover - fallback to default interval
             interval_sec = 60.0
 
         last_success = getattr(coord, "_last_success_monotonic", None)
