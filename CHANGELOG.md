@@ -1,6 +1,22 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [1.1.0] - 2026-01-08
+### Added
+- Connection status message as its own sensor
+  - to be able to track historical changes of the message
+- Possible to change credentials from integration config view
+- Repair flow for entering new credentials for re-auth triggered during runtime if credentials invalid.
+- Repair error notification without action triggered when failing to fetch data from API
+- Range limit to config option for polling interval (5s-24hours)
+### Fixed
+- Integration config view crashing due to attribute error
+- All auth errors triggered setup repair flow to enter new credentials
+  - Only invalid credentials trigger the flow now
+### Changed
+- Default device name set to 'Flowerhub' with lowercase 'h' for name consistency, previously 'FlowerHub'
+
 ## [1.0.1] - 2026-01-08
 Administrative change - remove filename from hacs.json since intended for HACS default standard integration
 

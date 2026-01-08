@@ -15,14 +15,20 @@
         }
       }
     },
+    "abort": {
+      "reauth_successful": "Reauthentication successful"
+    },
     "error": {
       "cannot_connect": "Failed to connect. Please check your credentials.",
+      "timeout": "Connection timeout. Please check your network and try again.",
+      "server_error": "Server error (HTTP {status_code}). Please try again later.",
       "missing_library": "The flowerhub-client library is not installed. Please install it first."
     }
   },
   "entity": {
     "sensor": {
       "status": { "name": "Connection Status" },
+      "status_message": { "name": "Status Message" },
       "last_updated": { "name": "Data Last Updated" },
       "inverter_name": { "name": "Inverter Name" },
       "battery_name": { "name": "Battery Name" },
@@ -37,14 +43,33 @@
       "battery_power_capacity": { "name": "Battery Power Capacity" }
     }
   },
+  "issues": {
+    "server_update_failures": {
+      "title": "Flowerhub update failures",
+      "description": "Repeated update failures detected (count: {count}). Last error: {last_error}. This likely indicates a backend outage or connectivity problem. The issue will clear automatically when updates succeed."
+    }
+  },
   "options": {
     "step": {
       "init": {
         "title": "Options",
+        "description": "Change credentials or how often to poll Flowerhub API for updating status.",
         "data": {
+          "username": "Username",
+          "password": "Password",
           "scan_interval": "Scan interval (seconds)"
+        },
+        "data_description": {
+          "username": "Your Flowerhub username (change if needed)",
+          "password": "Your Flowerhub password (enter to update credentials)",
+          "scan_interval": "How often to fetch data from Flowerhub (minimum {min}s, maximum {max}s)"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Please check your credentials.",
+      "timeout": "Connection timeout. Please check your network and try again.",
+      "server_error": "Server error (HTTP {status_code}). Please try again later."
     }
   }
 }

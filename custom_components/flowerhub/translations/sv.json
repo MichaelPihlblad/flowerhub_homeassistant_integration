@@ -15,14 +15,26 @@
         }
       }
     },
+    "abort": {
+      "reauth_successful": "Återautentisering lyckades"
+    },
     "error": {
       "cannot_connect": "Kunde inte ansluta. Kontrollera dina uppgifter.",
+      "timeout": "Anslutningen tog för lång tid. Kontrollera ditt nätverk och försök igen.",
+      "server_error": "Serverfel (HTTP {status_code}). Försök igen senare.",
       "missing_library": "Biblioteket flowerhub-client är inte installerat. Installera det först."
+    }
+  },
+  "issues": {
+    "server_update_failures": {
+      "title": "Flowerhub uppdateringar misslyckas",
+      "description": "Upprepade uppdateringsfel har upptäckts (antal: {count}). Senaste fel: {last_error}. Detta tyder sannolikt på ett backend-avbrott eller anslutningsproblem. Problemet rensas automatiskt när uppdateringar lyckas."
     }
   },
   "entity": {
     "sensor": {
       "status": { "name": "Anslutningsstatus" },
+      "status_message": { "name": "Meddelande" },
       "last_updated": { "name": "Senast uppdaterad" },
       "inverter_name": { "name": "Växelriktarens namn" },
       "battery_name": { "name": "Batterinamn" },
@@ -41,10 +53,23 @@
     "step": {
       "init": {
         "title": "Alternativ",
+        "description": "Ändra inloggningsuppgifter eller välj hur ofta status skall uppdateras från Flowerhub portalen",
         "data": {
+          "username": "Användarnamn",
+          "password": "Lösenord",
           "scan_interval": "Skanningsintervall (sekunder)"
+        },
+        "data_description": {
+          "username": "Ditt Flowerhub-användarnamn (ändra vid behov)",
+          "password": "Ditt Flowerhub-lösenord (ange för att uppdatera uppgifter)",
+          "scan_interval": "Hur ofta data ska hämtas från Flowerhub (minimum {min}s, maximum {max}s)"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Kunde inte ansluta. Kontrollera dina uppgifter.",
+      "timeout": "Anslutningen tog för lång tid. Kontrollera ditt nätverk och försök igen.",
+      "server_error": "Serverfel (HTTP {status_code}). Försök igen senare."
     }
   }
 }

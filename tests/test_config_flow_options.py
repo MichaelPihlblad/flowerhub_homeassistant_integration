@@ -17,16 +17,24 @@ async def test_options_flow_create_entry(hass: HomeAssistant):
         def __init__(self):
             self.entry_id = "123"
             self.options = {}
+            self.data = {"username": "test_user", "password": "test_pass"}
 
     entry = DummyEntry()
     flow = OptionsFlowHandler(entry)
+    flow.hass = hass  # Ensure flow has hass reference
 
     # Show form
     form = await flow.async_step_init()
     assert form["type"] == data_entry_flow.FlowResultType.FORM
 
-    # Submit options
-    result = await flow.async_step_init({"scan_interval": 45})
+    # Submit options (no credentials changed, same values)
+    result = await flow.async_step_init(
+        {
+            "username": "test_user",
+            "password": "test_pass",
+            "scan_interval": 45,
+        }
+    )
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
     assert result["data"]["scan_interval"] == 45
 

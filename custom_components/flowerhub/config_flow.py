@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
 import voluptuous as vol
+from aiohttp import ClientResponseError
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DEFAULT_NAME, DOMAIN
+from .const import DEFAULT_NAME, DOMAIN, SCAN_INTERVAL_MAX, SCAN_INTERVAL_MIN
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -20,6 +22,17 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 LOGGER = logging.getLogger(__name__)
+
+try:
+    from flowerhub_portal_api_client import (
+        AuthenticationError as FHAuthenticationError,  # type: ignore
+    )
+except Exception:  # pragma: no cover - optional auth exception
+    FHAuthenticationError = None  # type: ignore
+
+AUTH_EXCEPTIONS: tuple[type[Exception], ...] = tuple(
+    t for t in (FHAuthenticationError,) if isinstance(t, type)
+)
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
@@ -47,6 +60,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             except ImportError as err:
                 LOGGER.error("Flowerhub client library not found: %s", err)
                 errors["base"] = "missing_library"
+            except ClientResponseError as err:
+                LOGGER.warning(
+                    "HTTP error during validation (status=%s): %s", err.status, err
+                )
+                # 4xx/5xx are server-side issues, not credentials
+                if err.status >= 400:
+                    errors["base"] = "server_error"
+                else:
+                    errors["base"] = "cannot_connect"
+            except (TimeoutError, asyncio.TimeoutError) as err:
+                LOGGER.warning("Timeout during validation: %s", err)
+                errors["base"] = "timeout"
             except Exception as err:
                 # Do not log credentials; keep a concise trace for diagnostics
                 LOGGER.exception("Authentication failed during validation: %s", err)
@@ -67,17 +92,170 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             },
         )
 
+    async def async_step_reauth(self, entry_data: dict[str, Any] | None = None):
+        """Handle reauthentication when credentials are no longer valid."""
+        # Locate the existing entry from context
+        entry_id = self.context.get("entry_id")
+        self._reauth_entry = (
+            self.hass.config_entries.async_get_entry(entry_id) if entry_id else None
+        )
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input: dict[str, Any] | None = None):
+        """Confirm new credentials for reauthentication."""
+        errors: dict[str, str] = {}
+        data_schema = vol.Schema(
+            {
+                vol.Required("username"): str,
+                vol.Required("password"): str,
+            }
+        )
+
+        if user_input is not None:
+            username = user_input["username"]
+            password = user_input["password"]
+            try:
+                from flowerhub_portal_api_client import AsyncFlowerhubClient
+
+                session = async_get_clientsession(self.hass)
+                client = AsyncFlowerhubClient(session=session)
+                await client.async_login(username, password)
+                # Prime the client to ensure credentials are valid
+                await client.async_readout_sequence()
+            except AUTH_EXCEPTIONS as err:
+                LOGGER.warning("Authentication failed during reauth: %s", err)
+                errors["base"] = "cannot_connect"
+            except ClientResponseError as err:
+                LOGGER.warning(
+                    "HTTP error during reauth (status=%s): %s", err.status, err
+                )
+                # 4xx/5xx are server-side issues, not credentials
+                if err.status >= 400:
+                    errors["base"] = "server_error"
+                else:
+                    errors["base"] = "cannot_connect"
+            except (TimeoutError, asyncio.TimeoutError) as err:
+                LOGGER.warning("Timeout during reauth: %s", err)
+                errors["base"] = "timeout"
+            except Exception as err:
+                LOGGER.exception("Unexpected error during reauth: %s", err)
+                errors["base"] = "cannot_connect"
+            else:
+                # Update the existing entry with new credentials
+                if getattr(self, "_reauth_entry", None):
+                    assert self._reauth_entry is not None
+                    self.hass.config_entries.async_update_entry(
+                        self._reauth_entry,
+                        data={"username": username, "password": password},
+                    )
+                    return self.async_abort(reason="reauth_successful")
+                # Fallback: create a new entry if original could not be found
+                return self.async_create_entry(
+                    title=DEFAULT_NAME,
+                    description="Login using Flowerhub portal account credentials",
+                    data={"username": username, "password": password},
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=data_schema,
+            errors=errors,
+        )
+
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
+        # Base class exposes a read-only `config_entry` property
+        # backed by `_config_entry`
+        self._config_entry = config_entry
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
-        options_schema = vol.Schema({"scan_interval": int})
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+        errors: dict[str, str] = {}
+        # Get current credentials from config entry
+        current_username = self._config_entry.data.get("username", "")
+        current_password = self._config_entry.data.get("password", "")
+        current_scan_interval = self._config_entry.options.get("scan_interval", 60)
 
-        return self.async_show_form(step_id="init", data_schema=options_schema)
+        options_schema = vol.Schema(
+            {
+                vol.Required("username", default=current_username): str,
+                vol.Optional("password"): str,
+                vol.Required("scan_interval", default=current_scan_interval): vol.All(
+                    vol.Coerce(int),
+                    vol.Range(min=SCAN_INTERVAL_MIN, max=SCAN_INTERVAL_MAX),
+                ),
+            }
+        )
+
+        if user_input is not None:
+            username = user_input["username"]
+            password = user_input.get("password", "")
+            scan_interval = user_input["scan_interval"]
+
+            # Check if credentials need validation:
+            # - Username changed, OR
+            # - Password field is not empty AND different from current password
+            credentials_changed = username != current_username or (
+                password and password != current_password
+            )
+
+            if credentials_changed:
+                try:
+                    from flowerhub_portal_api_client import AsyncFlowerhubClient
+
+                    session = async_get_clientsession(self.hass)
+                    client = AsyncFlowerhubClient(session=session)
+                    # Use new password if provided, otherwise keep current password
+                    password_to_validate = password if password else current_password
+                    await client.async_login(username, password_to_validate)
+                    await client.async_readout_sequence()
+                except AUTH_EXCEPTIONS as err:
+                    LOGGER.warning("Authentication failed during options save: %s", err)
+                    errors["base"] = "cannot_connect"
+                except ClientResponseError as err:
+                    LOGGER.warning(
+                        "HTTP error during options save (status=%s): %s",
+                        err.status,
+                        err,
+                    )
+                    # 4xx/5xx are server-side issues, not credentials
+                    if err.status >= 400:
+                        errors["base"] = "server_error"
+                    else:
+                        errors["base"] = "cannot_connect"
+                except (TimeoutError, asyncio.TimeoutError) as err:
+                    LOGGER.warning("Timeout during options save: %s", err)
+                    errors["base"] = "timeout"
+                except Exception as err:
+                    LOGGER.exception("Unexpected error during options save: %s", err)
+                    errors["base"] = "cannot_connect"
+                else:
+                    # Update config entry data with new credentials
+                    # Use new password if provided, otherwise keep current password
+                    password_to_save = password if password else current_password
+                    self.hass.config_entries.async_update_entry(
+                        self._config_entry,
+                        data={"username": username, "password": password_to_save},
+                    )
+                    # Save options (scan_interval)
+                    return self.async_create_entry(
+                        title="", data={"scan_interval": scan_interval}
+                    )
+            else:
+                # Only scan_interval changed, save options
+                return self.async_create_entry(
+                    title="", data={"scan_interval": scan_interval}
+                )
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=options_schema,
+            errors=errors,
+            description_placeholders={
+                "min": str(SCAN_INTERVAL_MIN),
+                "max": str(SCAN_INTERVAL_MAX),
+            },
+        )
 
 
 async def async_get_options_flow(

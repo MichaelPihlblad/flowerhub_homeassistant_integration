@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 
 from homeassistant.components.sensor import (
@@ -28,6 +29,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities(
         [
             FlowerhubStatusSensor(coordinator, entry),
+            FlowerhubStatusMessageSensor(coordinator, entry),
             FlowerhubLastUpdatedSensor(coordinator, entry),
             FlowerhubInverterNameSensor(coordinator, entry),
             FlowerhubBatteryNameSensor(coordinator, entry),
@@ -136,7 +138,7 @@ class FlowerhubStatusSensor(FlowerhubBaseSensor):
         try:
             interval = getattr(coord, "update_interval", None)
             interval_sec = float(interval.total_seconds()) if interval else 60.0
-        except Exception:
+        except Exception:  # pragma: no cover - fallback to default interval
             interval_sec = 60.0
 
         last_success = getattr(coord, "_last_success_monotonic", None)
@@ -158,6 +160,29 @@ class FlowerhubStatusSensor(FlowerhubBaseSensor):
             "message": self.coordinator.data.get("message"),
             "last_updated": self.coordinator.data.get("last_updated"),
         }
+
+
+class FlowerhubStatusMessageSensor(FlowerhubBaseSensor):
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="status_message",
+            translation_key="status_message",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_status_message"
+
+    @property
+    def state(self):
+        message = self.coordinator.data.get("message")
+        if not message:
+            return None
+
+        # Convert camelCase to spaced words for better UI wrapping
+        # "InverterDongleFoundAndComponentsAreRunning"
+        #  -> "Inverter Dongle Found And Components Are Running"
+        spaced = re.sub(r"([A-Z])", r" \1", message).strip()
+        return spaced
 
 
 class FlowerhubLastUpdatedSensor(FlowerhubBaseSensor):

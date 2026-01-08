@@ -5,7 +5,19 @@ from time import monotonic
 from typing import Any
 
 from flowerhub_portal_api_client import AsyncFlowerhubClient
+from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.issue_registry import (
+    IssueSeverity,
+)
+from homeassistant.helpers.issue_registry import (
+    async_create_issue as ir_async_create_issue,
+)
+from homeassistant.helpers.issue_registry import (
+    async_delete_issue as ir_async_delete_issue,
+)
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from .const import DOMAIN
 
 try:  # Prefer explicit exception types from the client when available
     # Names below reflect common patterns; imports are guarded for safety
@@ -81,6 +93,7 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         hass,
         client,
         update_interval,
+        entry_id: str | None = None,
         username: str | None = None,
         password: str | None = None,
     ):
@@ -95,6 +108,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         self._username = username
         self._password = password
         self._first_update = True
+        self._entry_id = entry_id or "default"
+        self._consecutive_failures = 0
+        self._repair_threshold = 3
         # Track last successful update time (monotonic seconds)
         self._last_success_monotonic: float | None = None
         explicit_types = [
@@ -114,10 +130,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
 
         # If the client supports an auth error callback, hook it to schedule a reauth
         try:
-            if hasattr(self.client, "set_auth_error_callback") and callable(
-                getattr(self.client, "set_auth_error_callback")
-            ):
-                self.client.set_auth_error_callback(self._on_auth_error)
+            callback = getattr(self.client, "set_auth_error_callback", None)
+            if callable(callback):
+                callback(self._on_auth_error)
             elif hasattr(self.client, "on_auth_error"):
                 # Some clients expose a property callback
                 setattr(self.client, "on_auth_error", self._on_auth_error)
@@ -146,6 +161,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 if readout and readout.get("asset_resp") is not None:
                     asset_result = readout.get("asset_resp")
 
+                    if asset_result is None:
+                        raise UpdateFailed("asset_resp missing from readout")
+
                     # Validate AssetFetchResult TypedDict structure
                     _validate_asset_fetch_result(asset_result, "asset_resp")
 
@@ -173,6 +191,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 LOGGER.debug("Flowerhub coordinator fetching asset data")
                 # async_fetch_asset returns AssetFetchResult TypedDict (v0.4.0+)
                 result = await self.client.async_fetch_asset()
+
+                if result is None:
+                    raise UpdateFailed("Asset fetch returned no data")
 
                 # Validate AssetFetchResult TypedDict structure
                 _validate_asset_fetch_result(result, "async_fetch_asset result")
@@ -224,13 +245,24 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                         reauth_err,
                         type(reauth_err).__name__,
                     )
-                    raise UpdateFailed(
-                        f"Re-authentication failed: {reauth_err}"
-                    ) from reauth_err
+                    # Only prompt user if the failure is an auth error; otherwise
+                    # treat as server error to avoid unnecessary credential prompts
+                    if self._is_auth_error(reauth_err):
+                        # Signal Home Assistant to start a reauth flow
+                        raise ConfigEntryAuthFailed(
+                            f"Re-authentication failed: {reauth_err}"
+                        ) from reauth_err
+                    # Non-auth reauth failures are treated as transient
+                    self._consecutive_failures += 1
+                    self._maybe_raise_server_issue(reauth_err)
+                    raise UpdateFailed(reauth_err) from reauth_err
             else:
                 LOGGER.error(
                     "Update failed with %s: %s", type(err).__name__, err, exc_info=True
                 )
+                # Track non-auth failures and raise/refresh repairs issue as needed
+                self._consecutive_failures += 1
+                self._maybe_raise_server_issue(err)
                 raise UpdateFailed(err) from err
 
         status = self.client.flowerhub_status
@@ -239,16 +271,20 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         # Require flowerHubStatus.status to be present and not None or empty
         if not status:
             LOGGER.error("Client flowerhub_status is None after successful fetch")
-            raise UpdateFailed("FlowerHub status object missing in client")
+            raise UpdateFailed("Flowerhub status object missing in client")
 
         if not status.status:
             LOGGER.error(
-                "FlowerHub status.status field is empty. Status object: %s",
+                "Flowerhub status.status field is empty. Status object: %s",
                 status.__dict__ if hasattr(status, "__dict__") else status,
             )
-            raise UpdateFailed("FlowerHub status field is empty in response data")
+            raise UpdateFailed("Flowerhub status field is empty in response data")
         inverter = asset_info.get("inverter", {}) or {}
         battery = asset_info.get("battery", {}) or {}
+        # Any success clears server failure tracking and issue
+        if self._consecutive_failures:
+            self._clear_server_issue()
+            self._consecutive_failures = 0
         # Mark last successful update timestamp
         self._last_success_monotonic = monotonic()
         return {
@@ -283,8 +319,30 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 err, self._auth_exception_types
             ):
                 return True
-        except Exception:
+        except Exception:  # pragma: no cover - fallback if isinstance fails
             pass
+
+        # Detect HTTP-style auth failures (401/403) when a status is present
+        status = None
+        for attr in ("status", "status_code", "code"):
+            value = getattr(err, attr, None)
+            if isinstance(value, int):
+                status = value
+                break
+        if status is None:
+            try:
+                from aiohttp import ClientResponseError  # type: ignore
+
+                if isinstance(err, ClientResponseError):
+                    status = err.status
+            except Exception:  # pragma: no cover - aiohttp may not be available
+                pass
+        if status is not None:
+            if status in (401, 403):
+                return True
+            if status >= 500:
+                return False  # server errors are not auth failures
+
         text = str(err).lower()
         if any(
             code in text
@@ -313,9 +371,35 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 t = getattr(mod, name, None)
                 if isinstance(t, type) and issubclass(t, Exception):
                     types.append(t)
-        except Exception:
+        except Exception:  # pragma: no cover - fallback if module import fails
             pass
         return tuple(types)
+
+    def _server_issue_id(self) -> str:
+        return f"server_update_failures_{self._entry_id}"
+
+    def _maybe_raise_server_issue(self, err: Exception) -> None:
+        # Only raise a repairs issue for non-auth failures after threshold
+        if self._consecutive_failures < self._repair_threshold:
+            return
+        ir_async_create_issue(
+            hass=self.hass,
+            domain=DOMAIN,
+            issue_id=self._server_issue_id(),
+            is_fixable=False,
+            is_persistent=True,
+            severity=IssueSeverity.ERROR,
+            translation_key="server_update_failures",
+            translation_placeholders={
+                "count": str(self._consecutive_failures),
+                "last_error": str(err),
+            },
+        )
+
+    def _clear_server_issue(self) -> None:
+        ir_async_delete_issue(
+            hass=self.hass, domain=DOMAIN, issue_id=self._server_issue_id()
+        )
 
     async def _reauth_and_prime(self) -> None:
         if not self._username or not self._password:

@@ -22,6 +22,11 @@ from .coordinator import FlowerhubDataUpdateCoordinator
 LOGGER = logging.getLogger(__name__)
 
 
+async def _options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle options update."""
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
     client = AsyncFlowerhubClient(session=session)
@@ -31,17 +36,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
     except Exception as err:
         # Surface credential issues as auth failures so HA can prompt reauth
-        raise ConfigEntryAuthFailed("FlowerHub login failed") from err
+        raise ConfigEntryAuthFailed("Flowerhub login failed") from err
 
     # Some client implementations return a status-bearing dict instead of raising
     if isinstance(login_resp, dict):
         status = login_resp.get("status") or login_resp.get("code")
         try:
             status_int = int(status) if status is not None else None
-        except Exception:
+        except (
+            Exception
+        ):  # pragma: no cover - fallback if status is not convertible to int
             status_int = None
         if status_int and status_int >= 400:
-            raise ConfigEntryAuthFailed(f"FlowerHub login failed (status {status_int})")
+            raise ConfigEntryAuthFailed(f"Flowerhub login failed (status {status_int})")
 
     # Use the dedicated coordinator wrapper to keep logic centralized
     scan_interval = entry.options.get("scan_interval", 60)
@@ -49,6 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass,
         client,
         update_interval=timedelta(seconds=scan_interval),
+        entry_id=entry.entry_id,
         username=entry.data.get("username"),
         password=entry.data.get("password"),
     )
@@ -60,6 +68,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "client": client,
         "coordinator": coordinator,
     }
+
+    # Register listener for options updates
+    entry.async_on_unload(entry.add_update_listener(_options_update_listener))
 
     # Forward setup to platforms (skip in tests where integration not loaded)
     try:
