@@ -43,7 +43,7 @@
   },
   "issues": {
     "server_update_failures": {
-      "title": "FlowerHub update failures",
+      "title": "Flowerhub update failures",
       "description": "Repeated update failures detected (count: {count}). Last error: {last_error}. This likely indicates a backend outage or connectivity problem. The issue will clear automatically when updates succeed."
     }
   },
@@ -51,7 +51,7 @@
     "step": {
       "init": {
         "title": "Options",
-        "description": "Change credentials or how often to poll FlowerHub API for updating status.",
+        "description": "Change credentials or how often to poll Flowerhub API for updating status.",
         "data": {
           "username": "Username",
           "password": "Password",
@@ -60,7 +60,7 @@
         "data_description": {
           "username": "Your Flowerhub username (change if needed)",
           "password": "Your Flowerhub password (enter to update credentials)",
-          "scan_interval": "How often to fetch data from FlowerHub (minimum {min}s, maximum {max}s)"
+          "scan_interval": "How often to fetch data from Flowerhub (minimum {min}s, maximum {max}s)"
         }
       }
     },

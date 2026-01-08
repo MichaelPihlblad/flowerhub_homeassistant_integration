@@ -25,7 +25,7 @@
   },
   "issues": {
     "server_update_failures": {
-      "title": "FlowerHub uppdateringar misslyckas",
+      "title": "Flowerhub uppdateringar misslyckas",
       "description": "Upprepade uppdateringsfel har upptäckts (antal: {count}). Senaste fel: {last_error}. Detta tyder sannolikt på ett backend-avbrott eller anslutningsproblem. Problemet rensas automatiskt när uppdateringar lyckas."
     }
   },
@@ -51,7 +51,7 @@
     "step": {
       "init": {
         "title": "Alternativ",
-        "description": "Ändra inloggningsuppgifter eller välj hur ofta status skall uppdateras från FlowerHub portalen",
+        "description": "Ändra inloggningsuppgifter eller välj hur ofta status skall uppdateras från Flowerhub portalen",
         "data": {
           "username": "Användarnamn",
           "password": "Lösenord",
@@ -60,7 +60,7 @@
         "data_description": {
           "username": "Ditt Flowerhub-användarnamn (ändra vid behov)",
           "password": "Ditt Flowerhub-lösenord (ange för att uppdatera uppgifter)",
-          "scan_interval": "Hur ofta data ska hämtas från FlowerHub (minimum {min}s, maximum {max}s)"
+          "scan_interval": "Hur ofta data ska hämtas från Flowerhub (minimum {min}s, maximum {max}s)"
         }
       }
     },

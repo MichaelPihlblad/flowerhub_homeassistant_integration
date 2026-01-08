@@ -266,14 +266,14 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         # Require flowerHubStatus.status to be present and not None or empty
         if not status:
             LOGGER.error("Client flowerhub_status is None after successful fetch")
-            raise UpdateFailed("FlowerHub status object missing in client")
+            raise UpdateFailed("Flowerhub status object missing in client")
 
         if not status.status:
             LOGGER.error(
-                "FlowerHub status.status field is empty. Status object: %s",
+                "Flowerhub status.status field is empty. Status object: %s",
                 status.__dict__ if hasattr(status, "__dict__") else status,
             )
-            raise UpdateFailed("FlowerHub status field is empty in response data")
+            raise UpdateFailed("Flowerhub status field is empty in response data")
         inverter = asset_info.get("inverter", {}) or {}
         battery = asset_info.get("battery", {}) or {}
         # Any success clears server failure tracking and issue

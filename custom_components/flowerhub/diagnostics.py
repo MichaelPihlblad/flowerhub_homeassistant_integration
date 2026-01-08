@@ -1,4 +1,4 @@
-"""Diagnostics support for FlowerHub."""
+"""Diagnostics support for Flowerhub."""
 from __future__ import annotations
 
 from typing import Any

@@ -36,7 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
     except Exception as err:
         # Surface credential issues as auth failures so HA can prompt reauth
-        raise ConfigEntryAuthFailed("FlowerHub login failed") from err
+        raise ConfigEntryAuthFailed("Flowerhub login failed") from err
 
     # Some client implementations return a status-bearing dict instead of raising
     if isinstance(login_resp, dict):
@@ -46,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         except Exception:
             status_int = None
         if status_int and status_int >= 400:
-            raise ConfigEntryAuthFailed(f"FlowerHub login failed (status {status_int})")
+            raise ConfigEntryAuthFailed(f"Flowerhub login failed (status {status_int})")
 
     # Use the dedicated coordinator wrapper to keep logic centralized
     scan_interval = entry.options.get("scan_interval", 60)
