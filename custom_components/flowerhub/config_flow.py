@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -59,6 +60,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             except ImportError as err:
                 LOGGER.error("Flowerhub client library not found: %s", err)
                 errors["base"] = "missing_library"
+            except ClientResponseError as err:
+                LOGGER.warning(
+                    "HTTP error during validation (status=%s): %s", err.status, err
+                )
+                # 4xx/5xx are server-side issues, not credentials
+                if err.status >= 400:
+                    errors["base"] = "server_error"
+                else:
+                    errors["base"] = "cannot_connect"
+            except (TimeoutError, asyncio.TimeoutError) as err:
+                LOGGER.warning("Timeout during validation: %s", err)
+                errors["base"] = "timeout"
             except Exception as err:
                 # Do not log credentials; keep a concise trace for diagnostics
                 LOGGER.exception("Authentication failed during validation: %s", err)
@@ -116,7 +129,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 LOGGER.warning(
                     "HTTP error during reauth (status=%s): %s", err.status, err
                 )
-                errors["base"] = "cannot_connect"
+                # 4xx/5xx are server-side issues, not credentials
+                if err.status >= 400:
+                    errors["base"] = "server_error"
+                else:
+                    errors["base"] = "cannot_connect"
+            except (TimeoutError, asyncio.TimeoutError) as err:
+                LOGGER.warning("Timeout during reauth: %s", err)
+                errors["base"] = "timeout"
             except Exception as err:
                 LOGGER.exception("Unexpected error during reauth: %s", err)
                 errors["base"] = "cannot_connect"
@@ -198,7 +218,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         err.status,
                         err,
                     )
-                    errors["base"] = "cannot_connect"
+                    # 4xx/5xx are server-side issues, not credentials
+                    if err.status >= 400:
+                        errors["base"] = "server_error"
+                    else:
+                        errors["base"] = "cannot_connect"
+                except (TimeoutError, asyncio.TimeoutError) as err:
+                    LOGGER.warning("Timeout during options save: %s", err)
+                    errors["base"] = "timeout"
                 except Exception as err:
                     LOGGER.exception("Unexpected error during options save: %s", err)
                     errors["base"] = "cannot_connect"

@@ -20,6 +20,8 @@
     },
     "error": {
       "cannot_connect": "Kunde inte ansluta. Kontrollera dina uppgifter.",
+      "timeout": "Anslutningen tog för lång tid. Kontrollera ditt nätverk och försök igen.",
+      "server_error": "Serverfel (HTTP {status_code}). Försök igen senare.",
       "missing_library": "Biblioteket flowerhub-client är inte installerat. Installera det först."
     }
   },
@@ -65,7 +67,9 @@
       }
     },
     "error": {
-      "cannot_connect": "Kunde inte ansluta. Kontrollera dina uppgifter."
+      "cannot_connect": "Kunde inte ansluta. Kontrollera dina uppgifter.",
+      "timeout": "Anslutningen tog för lång tid. Kontrollera ditt nätverk och försök igen.",
+      "server_error": "Serverfel (HTTP {status_code}). Försök igen senare."
     }
   }
 }
