@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+from time import monotonic
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -391,7 +392,28 @@ class FlowerhubBatteryPowerCapacitySensor(FlowerhubBaseSensor):
         return battery.get("powerCapacity")
 
 
-class FlowerhubMonthlyUptimeRatioSensor(FlowerhubBaseSensor):
+class UptimeAvailabilityMixin:
+    """Mixin for uptime sensors with custom availability logic."""
+
+    @property
+    def available(self) -> bool:
+        coord = self.coordinator
+        try:
+            # Use main coordinator's update interval
+            interval = getattr(coord, "update_interval", None)
+            interval_sec = float(interval.total_seconds()) if interval else 60.0
+        except Exception:
+            interval_sec = 60.0
+
+        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
+        if last_success is None:
+            return bool(getattr(coord, "last_update_success", False))
+
+        age = monotonic() - last_success
+        return age <= (3.0 * interval_sec)
+
+
+class FlowerhubMonthlyUptimeRatioSensor(UptimeAvailabilityMixin, FlowerhubBaseSensor):
     """Sensor for monthly uptime ratio (percentage)."""
 
     def __init__(self, coordinator, entry):
@@ -420,27 +442,8 @@ class FlowerhubMonthlyUptimeRatioSensor(FlowerhubBaseSensor):
             "next_update": data.get("uptime_next_update"),
         }
 
-    @property
-    def available(self) -> bool:
-        coord = self.coordinator
-        try:
-            # Use main coordinator's update interval
-            interval = getattr(coord, "update_interval", None)
-            interval_sec = float(interval.total_seconds()) if interval else 60.0
-        except Exception:
-            interval_sec = 60.0
 
-        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
-        if last_success is None:
-            return bool(getattr(coord, "last_update_success", False))
-
-        from time import monotonic
-
-        age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
-
-
-class FlowerhubMonthlyUptimeSensor(FlowerhubBaseSensor):
+class FlowerhubMonthlyUptimeSensor(UptimeAvailabilityMixin, FlowerhubBaseSensor):
     """Sensor for monthly uptime in seconds (diagnostic)."""
 
     def __init__(self, coordinator, entry):
@@ -466,27 +469,8 @@ class FlowerhubMonthlyUptimeSensor(FlowerhubBaseSensor):
             "next_update": data.get("uptime_next_update"),
         }
 
-    @property
-    def available(self) -> bool:
-        coord = self.coordinator
-        try:
-            # Use main coordinator's update interval
-            interval = getattr(coord, "update_interval", None)
-            interval_sec = float(interval.total_seconds()) if interval else 60.0
-        except Exception:
-            interval_sec = 60.0
 
-        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
-        if last_success is None:
-            return bool(getattr(coord, "last_update_success", False))
-
-        from time import monotonic
-
-        age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
-
-
-class FlowerhubMonthlyUptimeRatioTotalSensor(FlowerhubBaseSensor):
+class FlowerhubMonthlyUptimeRatioTotalSensor(UptimeAvailabilityMixin, FlowerhubBaseSensor):
     """Sensor for total monthly uptime ratio (percentage)."""
 
     def __init__(self, coordinator, entry):
@@ -515,27 +499,8 @@ class FlowerhubMonthlyUptimeRatioTotalSensor(FlowerhubBaseSensor):
             "next_update": data.get("uptime_next_update"),
         }
 
-    @property
-    def available(self) -> bool:
-        coord = self.coordinator
-        try:
-            # Use main coordinator's update interval
-            interval = getattr(coord, "update_interval", None)
-            interval_sec = float(interval.total_seconds()) if interval else 60.0
-        except Exception:
-            interval_sec = 60.0
 
-        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
-        if last_success is None:
-            return bool(getattr(coord, "last_update_success", False))
-
-        from time import monotonic
-
-        age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
-
-
-class FlowerhubMonthlyDowntimeSensor(FlowerhubBaseSensor):
+class FlowerhubMonthlyDowntimeSensor(UptimeAvailabilityMixin, FlowerhubBaseSensor):
     """Sensor for monthly downtime in seconds (diagnostic)."""
 
     def __init__(self, coordinator, entry):
@@ -560,22 +525,3 @@ class FlowerhubMonthlyDowntimeSensor(FlowerhubBaseSensor):
             "last_updated": data.get("uptime_last_updated"),
             "next_update": data.get("uptime_next_update"),
         }
-
-    @property
-    def available(self) -> bool:
-        coord = self.coordinator
-        try:
-            # Use main coordinator's update interval
-            interval = getattr(coord, "update_interval", None)
-            interval_sec = float(interval.total_seconds()) if interval else 60.0
-        except Exception:
-            interval_sec = 60.0
-
-        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
-        if last_success is None:
-            return bool(getattr(coord, "last_update_success", False))
-
-        from time import monotonic
-
-        age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
