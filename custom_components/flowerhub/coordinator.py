@@ -143,6 +143,32 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         except Exception:  # pragma: no cover - best-effort wiring
             pass
 
+    def _build_uptime_data(self, uptime_pie_resp: dict[str, Any]) -> dict[str, Any]:
+        """Build uptime data dictionary with timestamps.
+
+        Args:
+            uptime_pie_resp: The uptime pie response dictionary from the API.
+
+        Returns:
+            A dictionary containing uptime data with calculated timestamps.
+        """
+        from datetime import datetime, timezone
+
+        now_utc = datetime.now(timezone.utc)
+        now_iso = now_utc.isoformat()
+        # Next update based on coordinator's actual polling interval
+        next_update_utc = now_utc + self.update_interval
+        next_iso = next_update_utc.isoformat()
+        return {
+            "uptime": uptime_pie_resp.get("uptime"),
+            "downtime": uptime_pie_resp.get("downtime"),
+            "no_data": uptime_pie_resp.get("noData"),
+            "uptime_ratio_actual": uptime_pie_resp.get("uptime_ratio_actual"),
+            "uptime_ratio_total": uptime_pie_resp.get("uptime_ratio_total"),
+            "updated_at": now_iso,
+            "next_update_at": next_iso,
+        }
+
     async def _async_update(self) -> dict[str, Any]:
         try:
             if self._first_update:
@@ -195,26 +221,7 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 if readout and readout.get("uptime_pie_resp") is not None:
                     uptime_pie_resp = readout.get("uptime_pie_resp")
                     if isinstance(uptime_pie_resp, dict):
-                        from datetime import datetime, timezone
-
-                        now_utc = datetime.now(timezone.utc)
-                        now_iso = now_utc.isoformat()
-                        # Next update based on coordinator's actual polling interval
-                        next_update_utc = now_utc + self.update_interval
-                        next_iso = next_update_utc.isoformat()
-                        self._uptime_data = {
-                            "uptime": uptime_pie_resp.get("uptime"),
-                            "downtime": uptime_pie_resp.get("downtime"),
-                            "no_data": uptime_pie_resp.get("noData"),
-                            "uptime_ratio_actual": uptime_pie_resp.get(
-                                "uptime_ratio_actual"
-                            ),
-                            "uptime_ratio_total": uptime_pie_resp.get(
-                                "uptime_ratio_total"
-                            ),
-                            "updated_at": now_iso,
-                            "next_update_at": next_iso,
-                        }
+                        self._uptime_data = self._build_uptime_data(uptime_pie_resp)
                         self._last_uptime_fetch_monotonic = monotonic()
                         LOGGER.debug(
                             "Uptime data cached from initial readout: %s",
@@ -498,22 +505,7 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
             )
 
             if isinstance(uptime_pie_resp, dict):
-                from datetime import datetime, timezone
-
-                now_utc = datetime.now(timezone.utc)
-                now_iso = now_utc.isoformat()
-                # Next update based on coordinator's actual polling interval
-                next_update_utc = now_utc + self.update_interval
-                next_iso = next_update_utc.isoformat()
-                self._uptime_data = {
-                    "uptime": uptime_pie_resp.get("uptime"),
-                    "downtime": uptime_pie_resp.get("downtime"),
-                    "no_data": uptime_pie_resp.get("noData"),
-                    "uptime_ratio_actual": uptime_pie_resp.get("uptime_ratio_actual"),
-                    "uptime_ratio_total": uptime_pie_resp.get("uptime_ratio_total"),
-                    "updated_at": now_iso,
-                    "next_update_at": next_iso,
-                }
+                self._uptime_data = self._build_uptime_data(uptime_pie_resp)
                 self._last_uptime_fetch_monotonic = monotonic()
                 LOGGER.debug("Uptime data updated: %s", self._uptime_data)
             else:
