@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+from time import monotonic
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -407,8 +408,6 @@ class UptimeAvailabilityMixin:
         last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
         if last_success is None:
             return bool(getattr(coord, "last_update_success", False))
-
-        from time import monotonic
 
         age = monotonic() - last_success
         return age <= (3.0 * interval_sec)
