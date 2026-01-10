@@ -113,6 +113,10 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         self._repair_threshold = 3
         # Track last successful update time (monotonic seconds)
         self._last_success_monotonic: float | None = None
+        # Track last uptime fetch time (monotonic seconds)
+        self._last_uptime_fetch_monotonic: float | None = None
+        # Cache uptime data
+        self._uptime_data: dict[str, Any] | None = None
         explicit_types = [
             FHAuthenticationError,
             globals().get("FHAuthError"),
@@ -186,6 +190,37 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                     LOGGER.debug(
                         "Initial readout successful, status code: %d", status_code or 0
                     )
+
+                # Store uptime data from initial readout
+                if readout and readout.get("uptime_pie_resp") is not None:
+                    uptime_pie_resp = readout.get("uptime_pie_resp")
+                    if isinstance(uptime_pie_resp, dict):
+                        from datetime import datetime, timezone
+
+                        now_utc = datetime.now(timezone.utc)
+                        now_iso = now_utc.isoformat()
+                        # Next update based on coordinator's actual polling interval
+                        next_update_utc = now_utc + self.update_interval
+                        next_iso = next_update_utc.isoformat()
+                        self._uptime_data = {
+                            "uptime": uptime_pie_resp.get("uptime"),
+                            "downtime": uptime_pie_resp.get("downtime"),
+                            "no_data": uptime_pie_resp.get("noData"),
+                            "uptime_ratio_actual": uptime_pie_resp.get(
+                                "uptime_ratio_actual"
+                            ),
+                            "uptime_ratio_total": uptime_pie_resp.get(
+                                "uptime_ratio_total"
+                            ),
+                            "updated_at": now_iso,
+                            "next_update_at": next_iso,
+                        }
+                        self._last_uptime_fetch_monotonic = monotonic()
+                        LOGGER.debug(
+                            "Uptime data cached from initial readout: %s",
+                            self._uptime_data,
+                        )
+
                 self._first_update = False
             else:
                 LOGGER.debug("Flowerhub coordinator fetching asset data")
@@ -226,6 +261,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 LOGGER.debug(
                     "Asset fetch successful, status code: %d", status_code or 0
                 )
+
+                # Fetch uptime data alongside asset data
+                await self._maybe_fetch_uptime_data()
         except Exception as err:
             # Try to detect auth-related failures and recover automatically
             if self._is_auth_error(err):
@@ -311,6 +349,24 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
             "battery_max_modules": battery.get("maxNumberOfBatteryModules"),
             "battery_power_capacity": battery.get("powerCapacity"),
             "energy_capacity": battery.get("energyCapacity"),
+            # Uptime data (current month)
+            "uptime": self._uptime_data.get("uptime") if self._uptime_data else None,
+            "downtime": self._uptime_data.get("downtime")
+            if self._uptime_data
+            else None,
+            "no_data": self._uptime_data.get("no_data") if self._uptime_data else None,
+            "uptime_ratio_actual": self._uptime_data.get("uptime_ratio_actual")
+            if self._uptime_data
+            else None,
+            "uptime_ratio_total": self._uptime_data.get("uptime_ratio_total")
+            if self._uptime_data
+            else None,
+            "uptime_last_updated": self._uptime_data.get("updated_at")
+            if self._uptime_data
+            else None,
+            "uptime_next_update": self._uptime_data.get("next_update_at")
+            if self._uptime_data
+            else None,
         }
 
     def _is_auth_error(self, err: Exception) -> bool:
@@ -421,3 +477,50 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
                 LOGGER.info("Flowerhub auth callback reauth succeeded")
 
         self.hass.async_create_task(_do())
+
+    async def _maybe_fetch_uptime_data(self) -> None:
+        """Fetch uptime data for the current month.
+
+        Fetches are aligned with the main coordinator polling interval.
+        Uses the client library's default period (current month in local timezone).
+        """
+        try:
+            asset_id = getattr(self.client, "asset_id", None)
+            if not asset_id:
+                LOGGER.debug("Skipping uptime fetch: no asset_id available")
+                return
+
+            LOGGER.debug("Fetching uptime data for current month")
+            uptime_pie_resp = await self.client.async_fetch_uptime_pie(
+                asset_id,
+                raise_on_error=False,
+                timeout_total=30.0,
+            )
+
+            if isinstance(uptime_pie_resp, dict):
+                from datetime import datetime, timezone
+
+                now_utc = datetime.now(timezone.utc)
+                now_iso = now_utc.isoformat()
+                # Next update based on coordinator's actual polling interval
+                next_update_utc = now_utc + self.update_interval
+                next_iso = next_update_utc.isoformat()
+                self._uptime_data = {
+                    "uptime": uptime_pie_resp.get("uptime"),
+                    "downtime": uptime_pie_resp.get("downtime"),
+                    "no_data": uptime_pie_resp.get("noData"),
+                    "uptime_ratio_actual": uptime_pie_resp.get("uptime_ratio_actual"),
+                    "uptime_ratio_total": uptime_pie_resp.get("uptime_ratio_total"),
+                    "updated_at": now_iso,
+                    "next_update_at": next_iso,
+                }
+                self._last_uptime_fetch_monotonic = monotonic()
+                LOGGER.debug("Uptime data updated: %s", self._uptime_data)
+            else:
+                LOGGER.warning(
+                    "Uptime fetch returned unexpected type: %s",
+                    type(uptime_pie_resp).__name__,
+                )
+        except Exception as err:
+            # Non-fatal; log and continue
+            LOGGER.debug("Uptime data fetch failed (non-fatal): %s", err)

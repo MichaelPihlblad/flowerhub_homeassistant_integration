@@ -76,6 +76,17 @@ class FakeAsyncFlowerhubClient:
                 "flowerhub_status": self.flowerhub_status,
                 "error": None,
             },
+            "uptime_pie_resp": {
+                "status_code": 200,
+                "uptime": 2592000.0,
+                "downtime": 3600.0,
+                "noData": 0.0,
+                "uptime_ratio_total": 99.86,
+                "uptime_ratio_actual": 99.86,
+                "json": {},
+                "text": "",
+                "error": None,
+            },
         }
 
     async def async_fetch_asset(self):
@@ -89,6 +100,22 @@ class FakeAsyncFlowerhubClient:
             "status_code": 200,
             "asset_info": self.asset_info,
             "flowerhub_status": self.flowerhub_status,
+            "error": None,
+        }
+
+    async def async_fetch_uptime_pie(
+        self, asset_id, raise_on_error=True, timeout_total=None
+    ):
+        # Simulate uptime data fetch
+        return {
+            "status_code": 200,
+            "uptime": 2592000.0,
+            "downtime": 3600.0,
+            "noData": 0.0,
+            "uptime_ratio_total": 99.86,
+            "uptime_ratio_actual": 99.86,
+            "json": {},
+            "text": "",
             "error": None,
         }
 

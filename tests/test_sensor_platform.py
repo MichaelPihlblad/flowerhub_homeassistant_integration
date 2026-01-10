@@ -8,6 +8,10 @@ from flowerhub.sensor import (
     FlowerhubInverterNameSensor,
     FlowerhubIsInstalledSensor,
     FlowerhubLastUpdatedSensor,
+    FlowerhubMonthlyDowntimeSensor,
+    FlowerhubMonthlyUptimeRatioSensor,
+    FlowerhubMonthlyUptimeRatioTotalSensor,
+    FlowerhubMonthlyUptimeSensor,
     FlowerhubPowerCapacitySensor,
     FlowerhubStatusMessageSensor,
     FlowerhubStatusSensor,
@@ -27,6 +31,10 @@ class FakeCoordinator:
             "energy_capacity": 15,
             "fuse_size": 16,
             "is_installed": True,
+            "uptime": 2592000.0,
+            "downtime": 3600.0,
+            "uptime_ratio_total": 99.86,
+            "uptime_ratio_actual": 99.86,
         }
         self.client = FakeClient()
 
@@ -54,6 +62,10 @@ class FakeEntry:
         (FlowerhubEnergyCapacitySensor, (15, None)),
         (FlowerhubFuseSizeSensor, (16, None)),
         (FlowerhubIsInstalledSensor, ("Yes", None)),
+        (FlowerhubMonthlyUptimeRatioSensor, (99.86, None)),
+        (FlowerhubMonthlyUptimeRatioTotalSensor, (99.86, None)),
+        (FlowerhubMonthlyUptimeSensor, (2592000.0, None)),
+        (FlowerhubMonthlyDowntimeSensor, (3600.0, None)),
     ],
 )
 def test_sensor_values_and_device_info(sensor_cls, expected):
@@ -74,6 +86,10 @@ def test_sensor_values_and_device_info(sensor_cls, expected):
             FlowerhubPowerCapacitySensor,
             FlowerhubEnergyCapacitySensor,
             FlowerhubFuseSizeSensor,
+            FlowerhubMonthlyUptimeRatioSensor,
+            FlowerhubMonthlyUptimeRatioTotalSensor,
+            FlowerhubMonthlyUptimeSensor,
+            FlowerhubMonthlyDowntimeSensor,
         ),
     ):
         assert sensor.native_value == expected[0]

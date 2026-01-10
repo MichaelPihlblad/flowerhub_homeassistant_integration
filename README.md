@@ -50,6 +50,9 @@ Or search for "Flowerhub" in HACS and install it.
 The integration creates the following sensor entities:
 ### Sensors
 - **Flowerhub Connection Status**: Connection system status
+- **Uptime Ratio Actual (Month)**: Current month uptime percentage excluding no-data periods
+- **Uptime Ratio Total (Month)**: Current month uptime percentage including no-data as downtime
+
 ### Diagnostics
 - **Inverter name**: Model of inverter
 - **Battery name**: Model of battery
@@ -58,12 +61,14 @@ The integration creates the following sensor entities:
 - **Flowerhub installation status**: installed / not installed
 - **Flowerhub configured fuse size**: configured size of fuse in the system (A)
 - **Data age**: Timestamp of when data was last retreived from Flowerhub portal API
+- **Monthly Uptime**: Current month total uptime duration (seconds)
+- **Monthly Downtime**: Current month total downtime duration (seconds)
 
 ## Requirements
 
 - Home Assistant 2023.6.0 or later
 - [Flowerhub portal](https://portal.flowerhub.se) account
-- [`flowerhub-portal-api-client`](https://pypi.org/project/flowerhub-portal-api-client/) library (automatically installed)
+- [`flowerhub-portal-api-client>=1.0.0`](https://pypi.org/project/flowerhub-portal-api-client/) library (automatically installed)
 
 ## Troubleshooting
 

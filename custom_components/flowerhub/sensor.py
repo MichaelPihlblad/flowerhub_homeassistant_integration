@@ -11,10 +11,12 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
 )
 from homeassistant.const import (
+    PERCENTAGE,
     EntityCategory,
     UnitOfElectricCurrent,
     UnitOfEnergy,
     UnitOfPower,
+    UnitOfTime,
 )
 
 from .const import DEFAULT_NAME, DOMAIN
@@ -42,6 +44,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
             FlowerhubBatteryManufacturerSensor(coordinator, entry),
             FlowerhubBatteryMaxModulesSensor(coordinator, entry),
             FlowerhubBatteryPowerCapacitySensor(coordinator, entry),
+            FlowerhubMonthlyUptimeRatioSensor(coordinator, entry),
+            FlowerhubMonthlyUptimeRatioTotalSensor(coordinator, entry),
+            FlowerhubMonthlyUptimeSensor(coordinator, entry),
+            FlowerhubMonthlyDowntimeSensor(coordinator, entry),
         ],
         True,
     )
@@ -383,3 +389,193 @@ class FlowerhubBatteryPowerCapacitySensor(FlowerhubBaseSensor):
     def native_value(self):
         battery = self.coordinator.data.get("battery", {})
         return battery.get("powerCapacity")
+
+
+class FlowerhubMonthlyUptimeRatioSensor(FlowerhubBaseSensor):
+    """Sensor for monthly uptime ratio (percentage)."""
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="monthly_uptime_ratio",
+            translation_key="monthly_uptime_ratio",
+            device_class=SensorDeviceClass.POWER_FACTOR,
+            native_unit_of_measurement=PERCENTAGE,
+            suggested_display_precision=1,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_monthly_uptime_ratio"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("uptime_ratio_actual")
+
+    @property
+    def extra_state_attributes(self):
+        data = self.coordinator.data or {}
+        return {
+            "uptime": data.get("uptime"),
+            "downtime": data.get("downtime"),
+            "no_data": data.get("no_data"),
+            "last_updated": data.get("uptime_last_updated"),
+            "next_update": data.get("uptime_next_update"),
+        }
+
+    @property
+    def available(self) -> bool:
+        coord = self.coordinator
+        try:
+            # Use main coordinator's update interval
+            interval = getattr(coord, "update_interval", None)
+            interval_sec = float(interval.total_seconds()) if interval else 60.0
+        except Exception:
+            interval_sec = 60.0
+
+        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
+        if last_success is None:
+            return bool(getattr(coord, "last_update_success", False))
+
+        from time import monotonic
+
+        age = monotonic() - last_success
+        return age <= (3.0 * interval_sec)
+
+
+class FlowerhubMonthlyUptimeSensor(FlowerhubBaseSensor):
+    """Sensor for monthly uptime in seconds (diagnostic)."""
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="monthly_uptime",
+            translation_key="monthly_uptime",
+            device_class=SensorDeviceClass.DURATION,
+            native_unit_of_measurement=UnitOfTime.SECONDS,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_monthly_uptime"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("uptime")
+
+    @property
+    def extra_state_attributes(self):
+        data = self.coordinator.data or {}
+        return {
+            "last_updated": data.get("uptime_last_updated"),
+            "next_update": data.get("uptime_next_update"),
+        }
+
+    @property
+    def available(self) -> bool:
+        coord = self.coordinator
+        try:
+            # Use main coordinator's update interval
+            interval = getattr(coord, "update_interval", None)
+            interval_sec = float(interval.total_seconds()) if interval else 60.0
+        except Exception:
+            interval_sec = 60.0
+
+        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
+        if last_success is None:
+            return bool(getattr(coord, "last_update_success", False))
+
+        from time import monotonic
+
+        age = monotonic() - last_success
+        return age <= (3.0 * interval_sec)
+
+
+class FlowerhubMonthlyUptimeRatioTotalSensor(FlowerhubBaseSensor):
+    """Sensor for total monthly uptime ratio (percentage)."""
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="monthly_uptime_ratio_total",
+            translation_key="monthly_uptime_ratio_total",
+            device_class=SensorDeviceClass.POWER_FACTOR,
+            native_unit_of_measurement=PERCENTAGE,
+            suggested_display_precision=1,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_monthly_uptime_ratio_total"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("uptime_ratio_total")
+
+    @property
+    def extra_state_attributes(self):
+        data = self.coordinator.data or {}
+        return {
+            "uptime": data.get("uptime"),
+            "downtime": data.get("downtime"),
+            "no_data": data.get("no_data"),
+            "last_updated": data.get("uptime_last_updated"),
+            "next_update": data.get("uptime_next_update"),
+        }
+
+    @property
+    def available(self) -> bool:
+        coord = self.coordinator
+        try:
+            # Use main coordinator's update interval
+            interval = getattr(coord, "update_interval", None)
+            interval_sec = float(interval.total_seconds()) if interval else 60.0
+        except Exception:
+            interval_sec = 60.0
+
+        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
+        if last_success is None:
+            return bool(getattr(coord, "last_update_success", False))
+
+        from time import monotonic
+
+        age = monotonic() - last_success
+        return age <= (3.0 * interval_sec)
+
+
+class FlowerhubMonthlyDowntimeSensor(FlowerhubBaseSensor):
+    """Sensor for monthly downtime in seconds (diagnostic)."""
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self.entity_description = SensorEntityDescription(
+            key="monthly_downtime",
+            translation_key="monthly_downtime",
+            device_class=SensorDeviceClass.DURATION,
+            native_unit_of_measurement=UnitOfTime.SECONDS,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_monthly_downtime"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("downtime")
+
+    @property
+    def extra_state_attributes(self):
+        data = self.coordinator.data or {}
+        return {
+            "last_updated": data.get("uptime_last_updated"),
+            "next_update": data.get("uptime_next_update"),
+        }
+
+    @property
+    def available(self) -> bool:
+        coord = self.coordinator
+        try:
+            # Use main coordinator's update interval
+            interval = getattr(coord, "update_interval", None)
+            interval_sec = float(interval.total_seconds()) if interval else 60.0
+        except Exception:
+            interval_sec = 60.0
+
+        last_success = getattr(coord, "_last_uptime_fetch_monotonic", None)
+        if last_success is None:
+            return bool(getattr(coord, "last_update_success", False))
+
+        from time import monotonic
+
+        age = monotonic() - last_success
+        return age <= (3.0 * interval_sec)

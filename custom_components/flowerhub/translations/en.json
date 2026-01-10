@@ -40,7 +40,11 @@
       "inverter_battery_stacks": { "name": "Inverter Battery Stacks Supported" },
       "battery_manufacturer": { "name": "Battery Manufacturer" },
       "battery_max_modules": { "name": "Battery Max Modules" },
-      "battery_power_capacity": { "name": "Battery Power Capacity" }
+      "battery_power_capacity": { "name": "Battery Power Capacity" },
+      "monthly_uptime_ratio": { "name": "Uptime Ratio Actual (Month)" },
+      "monthly_uptime_ratio_total": { "name": "Uptime Ratio Total (Month)" },
+      "monthly_uptime": { "name": "Monthly Uptime" },
+      "monthly_downtime": { "name": "Monthly Downtime" }
     }
   },
   "issues": {

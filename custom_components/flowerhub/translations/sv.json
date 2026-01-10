@@ -46,7 +46,11 @@
       "inverter_battery_stacks": { "name": "Växelriktare batteribankar stöd" },
       "battery_manufacturer": { "name": "Batteritillverkare" },
       "battery_max_modules": { "name": "Batteri max moduler" },
-      "battery_power_capacity": { "name": "Batteriets effektkapacitet" }
+      "battery_power_capacity": { "name": "Batteriets effektkapacitet" },
+      "monthly_uptime_ratio": { "name": "Drifttidskvot Faktisk (Månad)" },
+      "monthly_uptime_ratio_total": { "name": "Drifttidskvot Total (Månad)" },
+      "monthly_uptime": { "name": "Månatlig drifttid" },
+      "monthly_downtime": { "name": "Månatlig stillestånd" }
     }
   },
   "options": {
