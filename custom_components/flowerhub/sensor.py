@@ -392,7 +392,20 @@ class FlowerhubBatteryPowerCapacitySensor(FlowerhubBaseSensor):
 
 
 class FlowerhubMonthlyUptimeRatioSensor(FlowerhubBaseSensor):
-    """Sensor for monthly uptime ratio (percentage)."""
+    """Sensor for the *actual* monthly uptime ratio (percentage).
+
+    The underlying value is ``uptime_ratio_actual``, where the uptime ratio
+    is calculated only over periods with valid data so far this month.
+    The ``no_data`` field represents the remaining time in the current month
+    (future days that haven't occurred yet), which is excluded from the
+    denominator. This sensor shows how often the system was up during the
+    days that have actually elapsed this month.
+
+    In contrast, the "total" uptime ratio sensor (see
+    ``FlowerhubMonthlyUptimeRatioTotalSensor``) includes the remaining
+    time of the month (``no_data``) when computing the ratio, providing
+    a view over the full calendar month span.
+    """
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
@@ -487,7 +500,20 @@ class FlowerhubMonthlyUptimeSensor(FlowerhubBaseSensor):
 
 
 class FlowerhubMonthlyUptimeRatioTotalSensor(FlowerhubBaseSensor):
-    """Sensor for total monthly uptime ratio (percentage)."""
+    """Sensor for the *total* monthly uptime ratio (percentage).
+
+    The underlying value is ``uptime_ratio_total``, where the uptime ratio
+    is calculated over the entire calendar month, including the remaining
+    time (future days). The ``no_data`` field represents the remaining time
+    in the current month, which is included in the denominator as if it were
+    downtime. This provides a conservative view of uptime across the full
+    month span.
+
+    In contrast, the "actual" uptime ratio sensor (see
+    ``FlowerhubMonthlyUptimeRatioSensor``) excludes the remaining time of
+    the month (``no_data``) when computing the ratio, showing only the
+    uptime percentage for days that have already elapsed.
+    """
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
