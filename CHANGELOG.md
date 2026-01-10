@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-01-10
+### Added
+- Monthly uptime monitoring sensors for current month:
+  - **Uptime Ratio Actual (Month)**: Percentage of uptime so far during the month, excluding periods with no data, future time for the rest of the month (main sensor)
+  - **Uptime Ratio Total (Month)**: Percentage of uptime including no-data periods as downtime (regular sensor)
+  - **Monthly Uptime**: Total uptime duration in seconds (diagnostic)
+  - **Monthly Downtime**: Total downtime duration in seconds (diagnostic)
+  - Uptime data refresh aligned with main polling interval (controlled by configuration)
+
+### Changed
+- Updated to `flowerhub-portal-api-client>=1.0.0,<2.0.0` for new uptime functionality
+- Uptime statistics now refresh on every coordinator update (instead of fixed hourly schedule), controlled by user-configured polling interval
+
+
 ## [1.1.0] - 2026-01-08
 ### Added
 - Connection status message as its own sensor
