@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import logging
 from time import monotonic
 from typing import Any
@@ -152,8 +153,6 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
         Returns:
             A dictionary containing uptime data with calculated timestamps.
         """
-        from datetime import datetime, timezone
-
         now_utc = datetime.now(timezone.utc)
         now_iso = now_utc.isoformat()
         # Next update based on coordinator's actual polling interval
