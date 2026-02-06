@@ -392,7 +392,13 @@ class FlowerhubBatteryPowerCapacitySensor(FlowerhubBaseSensor):
 
 
 class FlowerhubMonthlyUptimeRatioSensor(FlowerhubBaseSensor):
-    """Sensor for monthly uptime ratio (percentage)."""
+    """Sensor for *actual* monthly uptime ratio (percentage).
+
+    This ratio is calculated only over intervals where data was available,
+    excluding any period without data (``no_data``). It therefore differs
+    from the "total" monthly uptime ratio sensor, which treats periods
+    without data as downtime.
+    """
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
@@ -487,7 +493,13 @@ class FlowerhubMonthlyUptimeSensor(FlowerhubBaseSensor):
 
 
 class FlowerhubMonthlyUptimeRatioTotalSensor(FlowerhubBaseSensor):
-    """Sensor for total monthly uptime ratio (percentage)."""
+    """Sensor for *total* monthly uptime ratio (percentage).
+
+    This ratio is calculated over the entire calendar month and treats any
+    period without data (``no_data``) as downtime, in addition to explicit
+    downtime. It therefore differs from the "actual" monthly uptime ratio
+    sensor, which only considers intervals where data was available.
+    """
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
