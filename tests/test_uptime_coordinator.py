@@ -145,43 +145,6 @@ async def test_uptime_data_fetched_on_every_update(hass, mock_client):
 
 
 @pytest.mark.asyncio
-async def test_uptime_data_fetched_after_one_hour(hass, mock_client):
-    """Test that uptime data is fetched after one hour has passed."""
-    from datetime import timedelta
-
-    coordinator = FlowerhubDataUpdateCoordinator(
-        hass,
-        mock_client,
-        update_interval=timedelta(seconds=60),
-        entry_id="test_entry",
-        username="test_user",
-        password="test_pass",
-    )
-
-    # Run first update
-    await coordinator.async_refresh()
-
-    # Simulate time passing (more than 1 hour)
-    coordinator._last_uptime_fetch_monotonic = monotonic() - 3601.0
-
-    # Reset mock to track new calls
-    mock_client.async_fetch_uptime_pie.reset_mock()
-
-    # Run second update (should fetch uptime again)
-    await coordinator.async_refresh()
-
-    # async_fetch_uptime_pie should have been called
-    mock_client.async_fetch_uptime_pie.assert_called_once()
-
-    # Verify data was updated
-    assert coordinator._uptime_data["uptime"] == 2595600.0
-    assert coordinator._uptime_data["downtime"] == 3700.0
-    assert coordinator._uptime_data["no_data"] == 0.0
-    assert coordinator.data["uptime_last_updated"]
-    assert coordinator.data["uptime_next_update"]
-
-
-@pytest.mark.asyncio
 async def test_uptime_fetch_handles_errors_gracefully(hass, mock_client):
     """Test that uptime fetch errors don't break coordinator updates."""
     from datetime import timedelta
