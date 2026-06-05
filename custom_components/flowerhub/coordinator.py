@@ -319,10 +319,9 @@ class FlowerhubDataUpdateCoordinator(DataUpdateCoordinator):
             raise UpdateFailed("Flowerhub status field is empty in response data")
         inverter = asset_info.get("inverter", {}) or {}
         battery = asset_info.get("battery", {}) or {}
-        # Any success clears server failure tracking and issue
-        if self._consecutive_failures:
-            self._clear_server_issue()
-            self._consecutive_failures = 0
+        # Any success clears server failure tracking and any issue / repair warning
+        self._clear_server_issue()
+        self._consecutive_failures = 0
         # Mark last successful update timestamp
         self._last_success_monotonic = monotonic()
         return {
