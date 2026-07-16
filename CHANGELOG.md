@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] - 2026-07-17
+### Fixed
+- Downloading diagnostics from the device view crashing due to a non-existent `last_update_time` coordinator attribute
+
+### Changed
+- Require `flowerhub-portal-api-client>=1.0.1,<2.0.0` so existing installations pick up the 1.0.1 client library update on next restart
+
+## [1.2.1] - 2026-06-05
+### Fixed
+- Repair warning not cleared if a reboot resolved the underlying issue - warnings/issues are now always cleared unconditionally on a successful update ([#12](https://github.com/MichaelPihlblad/flowerhub_homeassistant_integration/issues/12))
+
+### Changed
+- Updated Python version used in CI workflow
+
 ## [1.2.0] - 2026-01-10
 ### Added
 - Monthly uptime monitoring sensors for current month:
