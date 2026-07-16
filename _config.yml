@@ -1,0 +1,8 @@
+# Jekyll configuration for GitHub Pages
+#
+# Disable jekyll-github-metadata plugin to prevent build failures
+# when the GitHub API is temporarily unavailable (503 errors).
+# This plugin is loaded by default but makes external API calls during
+# the build that can fail with transient network/service errors.
+plugins:
+  - jekyll-seo-tag
