@@ -19,7 +19,7 @@ from homeassistant.const import (
     UnitOfTime,
 )
 
-from .const import DEFAULT_NAME, DOMAIN
+from .const import DEFAULT_NAME, DOMAIN, STALENESS_THRESHOLD_MULTIPLIER
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -154,7 +154,7 @@ class FlowerhubStatusSensor(FlowerhubBaseSensor):
         from time import monotonic
 
         age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
+        return age <= (STALENESS_THRESHOLD_MULTIPLIER * interval_sec)
 
     @property
     def state(self):
@@ -437,7 +437,7 @@ class FlowerhubMonthlyUptimeRatioSensor(FlowerhubBaseSensor):
         from time import monotonic
 
         age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
+        return age <= (STALENESS_THRESHOLD_MULTIPLIER * interval_sec)
 
 
 class FlowerhubMonthlyUptimeSensor(FlowerhubBaseSensor):
@@ -483,7 +483,7 @@ class FlowerhubMonthlyUptimeSensor(FlowerhubBaseSensor):
         from time import monotonic
 
         age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
+        return age <= (STALENESS_THRESHOLD_MULTIPLIER * interval_sec)
 
 
 class FlowerhubMonthlyUptimeRatioTotalSensor(FlowerhubBaseSensor):
@@ -532,7 +532,7 @@ class FlowerhubMonthlyUptimeRatioTotalSensor(FlowerhubBaseSensor):
         from time import monotonic
 
         age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
+        return age <= (STALENESS_THRESHOLD_MULTIPLIER * interval_sec)
 
 
 class FlowerhubMonthlyDowntimeSensor(FlowerhubBaseSensor):
@@ -578,4 +578,4 @@ class FlowerhubMonthlyDowntimeSensor(FlowerhubBaseSensor):
         from time import monotonic
 
         age = monotonic() - last_success
-        return age <= (3.0 * interval_sec)
+        return age <= (STALENESS_THRESHOLD_MULTIPLIER * interval_sec)
